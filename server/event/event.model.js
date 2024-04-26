@@ -1,19 +1,15 @@
 const mongoose = require("mongoose");
 
-const UsersSchema = new mongoose.Schema(
+const EventSchema = new mongoose.Schema(
     {
-        firstName: { type: String, default: "" },
-        lastName: { type: String, default: "" },
-        userName: { type: String, default: "" },
-        profilePic: { type: Array, default: [] },
-        mono: { type: String, default: "" },
-        countryCode: { type: String, default: "" },
-        address: { type: String, default: "" },
+        title: { type: String, default: "" },
+        location: { type: String, default: "" },
         lattitude: { type: String, default: "" },
         longtitude: { type: String, default: "" },
-        countryName: { type: String, default: "" },
-        fcmToken: { type: String, default: "" },
-       
+        eventDate: { type: String, default: "" },
+        time: { type: String, default: "" },
+        description: { type: String, default: "" },
+        mono: { type: String, default: "" }
     },
     {
         timestamps: true,
@@ -21,4 +17,4 @@ const UsersSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model("User", UsersSchema);
+module.exports = mongoose.model("Event", EventSchema);

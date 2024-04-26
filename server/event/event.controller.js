@@ -1,51 +1,39 @@
-const User = require("./event.model");
-const fs = require('fs');
+const Event = require("./event.model");
 
-exports.addUser = async (req, res) => {
+exports.addEvent = async (req, res) => {
   var {
-    firstName,
-    lastName,
-    userName,
-    profilePic,
-    mono,
-    countryCode,
-    address,
+    title,
+    location,
     lattitude,
     longtitude,
-    countryName,
-    fcmToken,
+    eventDate,
+    time,
+    description,
+    mono,
   } = req.body;
   try {
-    var existingUser = await User.findOne({
-      $or: [{ userName }, { mono }, { firstName }, { lastName }],
-    });
+    var existingEvent = await Event.findOne({title});
 
-    if (existingUser) {
-      return res.status(200).json({ status: false, message: "User already exists." });
+    if (existingEvent) {
+      return res.status(200).json({ status: false, message: "Event already exists." });
     }
 
-    var newUser = new User({
-      firstName: firstName || "",
-      lastName: lastName || "",
-      userName: userName || "",
-      profilePic: profilePic || "",
-      mono: mono || "",
-      countryCode: countryCode || "",
-      address: address || "",
+    var newEvent = new Event({
+      title: title || "",
+      location: location || "",
       lattitude: lattitude || "",
       longtitude: longtitude || "",
-      countryName: countryName || "",
-      fcmToken: fcmToken || "",
+      eventDate: eventDate || "",
+      countryCode: countryCode || "",
+      time: time || "",
+      description: description || "",
+      mono: mono || ""
     });
 
-    if (req.files.profilePic) {
-      newUser.profilePic = req.files.profilePic[0].path;
-    }
+    var eventSaved = await newEvent.save();
 
-    var userSaved = await newUser.save();
-
-    if (userSaved) {
-      return res.status(200).json({ status: true, message: "User registered.", user : newUser });
+    if (eventSaved) {
+      return res.status(200).json({ status: true, message: "Event registered."});
     } else {
       return res.status(200).json({ status: false, message: "Failed." });
     }
@@ -54,48 +42,34 @@ exports.addUser = async (req, res) => {
   }
 };
 
-exports.updateUser = async (req, res) => {
+exports.updateEvent = async (req, res) => {
   var {
-    userId,
-    firstName,
-    lastName,
-    userName,
-    profilePic,
-    mono,
-    countryCode,
-    address,
+    eventId,
+    title,
+    location,
     lattitude,
     longtitude,
-    countryName,
-    fcmToken,
+    eventDate,
+    time,
+    description,
+    mono,
   } = req.body;
 
   try {
-    var existingUser = await User.findOne({ _id: userId });
+    var existingEvent = await Event.findOne({ _id: eventId });
 
-    if (existingUser) {
+    if (existingEvent) {
 
-      existingUser.firstName = firstName != "" ? firstName : existingUser.firstName;
-      existingUser.lastName = lastName != "" ? lastName : existingUser.lastName;
-      existingUser.userName = userName != "" ? userName : existingUser.userName;
-      existingUser.profilePic = profilePic != "" ? profilePic : existingUser.profilePic;
-      existingUser.mono = mono != "" ? mono : existingUser.mono;
-      existingUser.countryCode = countryCode != "" ? countryCode : existingUser.countryCode;
-      existingUser.address = address != "" ? address : existingUser.address;
-      existingUser.lattitude = lattitude != "" ? lattitude : existingUser.lattitude;
-      existingUser.longtitude = longtitude != "" ? longtitude : existingUser.longtitude;
-      existingUser.countryName = countryName != "" ? countryName : existingUser.countryName;
-      existingUser.fcmToken = fcmToken != "" ? fcmToken : existingUser.fcmToken;
+      existingEvent.title = title != "" ? title : existingEvent.title;
+      existingEvent.location = location != "" ? location : existingEvent.location;
+      existingEvent.lattitude = lattitude != "" ? lattitude : existingEvent.lattitude;
+      existingEvent.longtitude = longtitude != "" ? longtitude : existingEvent.longtitude;
+      existingEvent.eventDate = eventDate != "" ? eventDate : existingEvent.eventDate;
+      existingEvent.time = time != "" ? time : existingEvent.time;
+      existingEvent.description = description != "" ? description : existingEvent.description;
+      existingEvent.mono = mono != "" ? mono : existingEvent.mono;
 
-      if (req.files.profilePic != undefined) {
-        const elem = existingUser.profilePic;
-        if (fs.existsSync(elem)) {
-          fs.unlinkSync(elem);
-        }
-        existingUser.profilePic = req.files.profilePic[0].path;
-      }
-
-      updateSaved = await existingUser.save();
+      updateSaved = await existingEvent.save();
 
       if (updateSaved)
         res.status(200).json({ status: true, message: "Success." });
@@ -105,7 +79,7 @@ exports.updateUser = async (req, res) => {
     } else {
       res
         .status(200)
-        .json({ status: true, message: "User is not registered." });
+        .json({ status: true, message: "Event is not registered." });
     }
   } catch (error) {
     return res
@@ -114,27 +88,27 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-exports.getAllUser = async (req, res) => {
+exports.getAllEvent = async (req, res) => {
   try {
-    var existingUser = await User.find()
+    var existingEvent = await Event.find()
       .limit(req.query.limit)
       .skip((req.query.pageNo - 1) * req.query.limit)
       .sort({ createdAt: -1 });
-    var existingUserLength = await User.find();
+    var existingEventLength = await Event.find();
 
-    if (existingUser.length > 0) {
+    if (existingEvent.length > 0) {
       res.status(200).json({
         status: true,
         message: "Success.",
-        totalUser: existingUserLength.length,
-        User: existingUser,
+        totalEvent: existingEventLength.length,
+        event: existingEvent,
       });
     } else {
       res.status(200).json({
         status: true,
         message: "Success.",
-        totalUser: existingUserLength.length,
-        User: [],
+        totalEvent: existingEventLength.length,
+        event: [],
       });
     }
   } catch (error) {
@@ -144,17 +118,14 @@ exports.getAllUser = async (req, res) => {
   }
 };
 
-exports.deleteUser = async (req, res) => {
+exports.deleteEvent = async (req, res) => {
   try {
-    var existingUser = await User.findOne({ _id: req.query.userId });
+    var existingEvent = await Event.findOne({ _id: req.query.eventId });
 
-    if (existingUser) {
-      var deletedUser = await User.deleteOne({ _id: req.query.userId });
+    if (existingEvent) {
+      var deletedEvent = await Event.deleteOne({ _id: req.query.eventId });
 
-      if (fs.existsSync(existingUser.profilePic[0])) {
-        fs.unlinkSync(existingUser.profilePic[0]);
-      }
-
+    
       return res.status(200).json({ status: true, message: "Success!!" });
     } else {
       return res.status(200).json({ status: false, message: "Wrong Id received." });
@@ -164,38 +135,21 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-exports.userCheck = async (req, res) => {
+exports.getUserWiseEvent = async (req, res) => {
   try {
-    const { mono } = req.body;
+    var existingEvent = await Event.findOne({ mono: req.query.mono });
 
-    const existingUser = await User.findOne({ mono });
-
-    if (existingUser) {
-      return res.status(200).json({ status: true, message: "User found" });
-    } else {
-      return res.status(200).json({ status: false, message: "User not found" });
-    }
-  } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
-  }
-};
-
-  
-exports.getUser = async (req, res) => {
-  try {
-    var existingUser = await User.findOne({ mono: req.query.mono });
-
-    if (existingUser) {
+    if (existingEvent) {
       res.status(200).json({
         status: true,
         message: "Success.",
-        User: existingUser,
+        event: existingEvent,
       });
     } else {
       res.status(200).json({
         status: false,
-        message: "User not found.",
-        User: null,
+        message: "Event not found.",
+        event: [],
       });
     }
   } catch (error) {
