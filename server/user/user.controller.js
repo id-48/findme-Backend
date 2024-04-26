@@ -8,6 +8,7 @@ exports.addUser = async (req, res) => {
     userName,
     profilePic,
     mono,
+    countryCode,
     address,
     lattitude,
     longtitude,
