@@ -21,14 +21,14 @@ app.use(bodyParser.json());
 const User = require("./server/user/user.route");
 app.use("/users", User);
 
-// Place route
-const Place = require("./server/place/place.route");
-app.use("/place", Place);
-
 // Event route
 const Event = require("./server/event/event.route");
 app.use("/events", Event);
 
+
+// Places route
+const Places = require("./server/place/place.route");
+app.use("/places", Places);
 
 
 //mongodb connection
