@@ -24,7 +24,6 @@ exports.addEvent = async (req, res) => {
       lattitude: lattitude || "",
       longtitude: longtitude || "",
       eventDate: eventDate || "",
-      countryCode: countryCode || "",
       time: time || "",
       description: description || "",
       mono: mono || ""
