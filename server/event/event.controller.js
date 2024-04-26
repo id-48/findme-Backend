@@ -136,19 +136,19 @@ exports.deleteEvent = async (req, res) => {
 
 exports.getUserWiseEvent = async (req, res) => {
   try {
-    var existingEvent = await Event.findOne({ mono: req.query.mono });
+    var allEvents = await Event.find({ mono: req.query.mono });
 
-    if (existingEvent) {
+    if (allEvents.length > 0) {
       res.status(200).json({
         status: true,
         message: "Success.",
-        event: existingEvent,
+        events: allEvents,
       });
     } else {
       res.status(200).json({
         status: false,
-        message: "Event not found.",
-        event: [],
+        message: "Events not found for the given mono.",
+        events: [],
       });
     }
   } catch (error) {
