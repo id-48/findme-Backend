@@ -12,6 +12,7 @@ exports.addUser = async (req, res) => {
     lattitude,
     longtitude,
     countryName,
+    fcmToken,
   } = req.body;
   try {
     var existingUser = await User.findOne({
@@ -32,6 +33,7 @@ exports.addUser = async (req, res) => {
       lattitude: lattitude || "",
       longtitude: longtitude || "",
       countryName: countryName || "",
+      fcmToken: fcmToken || "",
     });
 
     if (req.files.profilePic) {
@@ -62,6 +64,7 @@ exports.updateUser = async (req, res) => {
     lattitude,
     longtitude,
     countryName,
+    fcmToken,
   } = req.body;
 
   try {
@@ -78,6 +81,7 @@ exports.updateUser = async (req, res) => {
       existingUser.lattitude = lattitude != "" ? lattitude : existingUser.lattitude;
       existingUser.longtitude = longtitude != "" ? longtitude : existingUser.longtitude;
       existingUser.countryName = countryName != "" ? countryName : existingUser.countryName;
+      existingUser.fcmToken = fcmToken != "" ? fcmToken : existingUser.fcmToken;
 
       if (req.files.profilePic != undefined) {
         const elem = existingUser.profilePic;

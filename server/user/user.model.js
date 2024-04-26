@@ -11,6 +11,7 @@ const UsersSchema = new mongoose.Schema(
         lattitude: { type: String, default: "" },
         longtitude: { type: String, default: "" },
         countryName: { type: String, default: "" },
+        fcmToken: { type: String, default: "" },
        
     },
     {
