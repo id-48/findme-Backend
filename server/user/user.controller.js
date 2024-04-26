@@ -175,7 +175,7 @@ exports.userCheck = async (req, res) => {
   
 exports.getUser = async (req, res) => {
   try {
-    var existingUser = await User.findOne({ _id: req.query.userId });
+    var existingUser = await User.findOne({ mono: req.query.mono });
 
     if (existingUser) {
       res.status(200).json({
