@@ -22,7 +22,7 @@ const User = require("./server/user/user.route");
 app.use("/users", User);
 
 // Event route
-const Event = require("./server/user/user.route");
+const Event = require("./server/event/event.route");
 app.use("/events", Event);
 
 
