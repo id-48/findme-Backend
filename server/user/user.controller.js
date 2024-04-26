@@ -43,7 +43,7 @@ exports.addUser = async (req, res) => {
     var userSaved = await newUser.save();
 
     if (userSaved) {
-      return res.status(200).json({ status: true, message: "User registered.", user : existingUser });
+      return res.status(200).json({ status: true, message: "User registered." });
     } else {
       return res.status(200).json({ status: false, message: "Failed." });
     }
