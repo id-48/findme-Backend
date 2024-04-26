@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const EventSchema = new mongoose.Schema(
+const PlaceSchema = new mongoose.Schema(
     {
         placeName: { type: String, default: "" },
         category: { type: String, default: "" },
@@ -17,4 +17,4 @@ const EventSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model("Event", EventSchema);
+module.exports = mongoose.model("Place", PlaceSchema);
