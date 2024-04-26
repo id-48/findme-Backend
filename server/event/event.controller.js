@@ -147,7 +147,7 @@ exports.getUserWiseEvent = async (req, res) => {
     } else {
       res.status(200).json({
         status: false,
-        message: "Events not found for the given mono.",
+        message: "Events not found for the given mobile number.",
         events: [],
       });
     }

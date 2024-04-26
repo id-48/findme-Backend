@@ -25,6 +25,9 @@ app.use("/users", User);
 const Event = require("./server/event/event.route");
 app.use("/events", Event);
 
+// Palce route
+const Place = require("./server/place/place.route");
+app.use("/palces", Place);
 
 
 
