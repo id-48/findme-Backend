@@ -10,6 +10,6 @@ router.get("/getAllPlace", PlaceController.getAllPlace);
 
 router.get("/getUserWisePlace", PlaceController.getUserWisePlace);
 
-router.get("/deletePlace", PlaceController.deleteEvent);
+router.get("/deletePlace", PlaceController.deletePlace);
 
 module.exports = router;
