@@ -17,9 +17,13 @@ app.use("/storage", express.static(path.join(__dirname, "storage")));
 //Parser
 app.use(bodyParser.json());
 
-// Colors route
+// User route
 const User = require("./server/user/user.route");
 app.use("/users", User);
+
+// Event route
+const Event = require("./server/user/user.route");
+app.use("/events", Event);
 
 
 

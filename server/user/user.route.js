@@ -19,6 +19,6 @@ router.get("/getUser", UserController.getUser);
 
 router.get("/deleteUser", UserController.deleteUser);
 
-router.get("/checkUser", UserController.userCheck);
+router.post("/checkUser", UserController.userCheck);
 
 module.exports = router;
