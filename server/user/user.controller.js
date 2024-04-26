@@ -16,9 +16,7 @@ exports.addUser = async (req, res) => {
     fcmToken,
   } = req.body;
   try {
-    var existingUser = await User.findOne({
-      $or: [{ userName }, { mono }, { firstName }, { lastName }],
-    });
+    var existingUser = await User.findOne({ mono });
 
     if (existingUser) {
       return res.status(200).json({ status: false, message: "User already exists." });
