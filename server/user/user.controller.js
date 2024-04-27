@@ -45,9 +45,7 @@ exports.addUser = async (req, res) => {
     var userSaved = await newUser.save();
 
     if (userSaved) {
-      const token = jwt.sign({ id: newUser._id }, config.JWT_SECRET, {
-        expiresIn: 86400 // expires in 24 hours
-      });
+      const token = jwt.sign({ id: newUser._id }, config.JWT_SECRET);
 
       return res.status(200).json({ status: true, message: "User registered.", token: token });
     } else {
