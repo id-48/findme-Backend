@@ -9,19 +9,16 @@ const upload = multer({
     storage,    
 });
 
-router.use(verifyToken());
-
-
 router.post("/addUser", upload.fields([{ name: "profilePic" }]),UserController.addUser);
 
-router.post("/updateUser" , upload.fields([{ name: "profilePic" }]), UserController.updateUser);
+router.post("/updateUser" , upload.fields([{ name: "profilePic" }]), verifyToken,UserController.updateUser);
 
-router.get("/getAllUser", UserController.getAllUser);
+router.get("/getAllUser", verifyToken, UserController.getAllUser);
 
-router.get("/getUser", UserController.getUser);
+router.get("/getUser", verifyToken, UserController.getUser);
 
-router.get("/deleteUser", UserController.deleteUser);
+router.get("/deleteUser", verifyToken , UserController.deleteUser);
 
-router.post("/checkUser", UserController.userCheck);
+router.post("/checkUser", verifyToken, UserController.userCheck);
 
 module.exports = router;
