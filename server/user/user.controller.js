@@ -26,7 +26,7 @@ exports.addUser = async (req, res) => {
       firstName: firstName || "",
       lastName: lastName || "",
       userName: userName || "",
-      profilePic: profilePic || "",
+      profilePic: profilePic || [],
       mono: mono || "",
       countryCode: countryCode || "",
       address: address || "",

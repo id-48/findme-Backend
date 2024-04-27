@@ -25,10 +25,13 @@ app.use("/users", User);
 const Event = require("./server/event/event.route");
 app.use("/events", Event);
 
-
 // Places route
 const Places = require("./server/place/place.route");
 app.use("/places", Places);
+
+// Connection route
+const Connection = require("./server/connection/connection.route");
+app.use("/connection", Connection);
 
 
 //mongodb connection
