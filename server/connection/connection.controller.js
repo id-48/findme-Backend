@@ -93,8 +93,8 @@ exports.addFriend = async (req, res) => {
 
 exports.friendList = async (req, res) => {
   try {
-    const { toId } = req.query;
-    const filteredConnections = await Connection.find({ toId, isrequest: true });
+    const { fromUserId } = req.query;
+    const filteredConnections = await Connection.find({ fromUserId, isrequest: true });
 
     if (filteredConnections.length > 0) {
       res.status(200).json({
