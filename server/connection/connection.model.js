@@ -9,6 +9,7 @@ const ConnectionSchema = new mongoose.Schema(
         userName: { type: String, default: "" },
         profilePic: { type: Array, default: [] },
         mono: { type: String, default: "" },
+        isrequest:{ type: Boolean, default: false },
         countryCode: { type: String, default: "" },
         address: { type: String, default: "" },
         lattitude: { type: String, default: "" },

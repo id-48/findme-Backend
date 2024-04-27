@@ -7,4 +7,6 @@ router.post("/addConnection", verifyToken, ConnectionController.addConnection);
 
 router.get("/getUserWiseConnection",verifyToken, ConnectionController.getUserWiseConnection);
 
+// router.get("/addFriend",verifyToken, ConnectionController.addFriend);
+
 module.exports = router;
