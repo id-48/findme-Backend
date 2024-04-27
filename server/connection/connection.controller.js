@@ -79,17 +79,6 @@ exports.getUserWiseConnection = async (req, res) => {
   }
 };
 
-exports.addFriend = async (req, res) => {
-  try {
-    await Connection.findByIdAndUpdate(req.query.userId, { isrequest: true });
-
-    const updatedUser = await Connection.findById(req.query.userId);
-
-    return res.status(200).json({ status: true, message: "Friend added.", user: updatedUser });
-  } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
-  }
-};
 
 exports.addFriend = async (req, res) => {
   try {
