@@ -91,7 +91,7 @@ exports.addFriend = async (req, res) => {
   }
 };
 
-exports.friendlist = async (req, res) => {
+exports.friendList = async (req, res) => {
   try {
     const { toId } = req.query;
     const filteredConnections = await Connection.find({ toId, isrequest: true });
