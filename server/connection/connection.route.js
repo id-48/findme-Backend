@@ -9,6 +9,8 @@ router.get("/getUserWiseConnection",verifyToken, ConnectionController.getUserWis
 
 router.get("/addFriend",verifyToken, ConnectionController.addFriend);
 
+router.get("/removeRequest",verifyToken, ConnectionController.removeRequest);
+
 router.get("/friendList",verifyToken, ConnectionController.friendList);
 
 module.exports = router;
