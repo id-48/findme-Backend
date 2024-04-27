@@ -126,7 +126,7 @@ exports.removeRequest = async (req, res) => {
     if (!existingUser) {
       return res.status(400).json({ status: false, message: "Wrong Id received." });
     }
-    var removeRequest = await User.deleteOne({ _id: userId });
+    var removeRequest = await Connection.deleteOne({ _id: userId });
 
 
     return res.status(200).json({ status: true, message: "Success" });
