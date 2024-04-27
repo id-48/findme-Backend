@@ -70,7 +70,7 @@ exports.getUserWiseConnection = async (req, res) => {
     } else {
       res.status(200).json({
         status: false,
-        message: "Connection not found for the given mobile number.",
+        message: "Connection not found.",
         connection: [],
       });
     }
