@@ -3,58 +3,6 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const config = require('../../config'); 
 
-// exports.addUser = async (req, res) => {
-//   var {
-//     firstName,
-//     lastName,
-//     userName,
-//     profilePic,
-//     mono,
-//     countryCode,
-//     address,
-//     lattitude,
-//     longtitude,
-//     countryName,
-//     fcmToken,
-//   } = req.body;
-//   try {
-//     var existingUser = await User.findOne({ mono });
-
-//     if (existingUser) {
-//       return res.status(200).json({ status: false, message: "User already exists." });
-//     }
-
-//     var newUser = new User({
-//       firstName: firstName || "",
-//       lastName: lastName || "",
-//       userName: userName || "",
-//       profilePic: profilePic || [],
-//       mono: mono || "",
-//       countryCode: countryCode || "",
-//       address: address || "",
-//       lattitude: lattitude || "",
-//       longtitude: longtitude || "",
-//       countryName: countryName || "",
-//       fcmToken: fcmToken || "",
-//     });
-
-//     if (req.files.profilePic) {
-//       newUser.profilePic = req.files.profilePic[0].path;
-//     }
-
-//     var userSaved = await newUser.save();
-
-//     if (userSaved) {
-//       return res.status(200).json({ status: true, message: "User registered." });
-//     } else {
-//       return res.status(200).json({ status: false, message: "Failed." });
-//     }
-//   } catch (error) {
-//     return res.status(500).json({ status: false, error: error.message || "Server Error" });
-//   }
-// };
-
-
 exports.addUser = async (req, res) => {
   var {
     firstName,

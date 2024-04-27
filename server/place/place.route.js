@@ -1,15 +1,17 @@
 const express = require("express");
 const PlaceController = require("./place.controller");
+const verifyToken = require('../../checkAccess'); 
+
 const router = express.Router();
 
-router.post("/addPlace", PlaceController.addPlace);
+router.post("/addPlace", verifyToken, PlaceController.addPlace);
 
-router.post("/updatePlace", PlaceController.updatePlace);
+router.post("/updatePlace", verifyToken, PlaceController.updatePlace);
 
-router.get("/getAllPlace", PlaceController.getAllPlace);
+router.get("/getAllPlace", verifyToken, PlaceController.getAllPlace);
 
-router.get("/getUserWisePlace", PlaceController.getUserWisePlace);
+router.get("/getUserWisePlace", verifyToken, PlaceController.getUserWisePlace);
 
-router.get("/deletePlace", PlaceController.deletePlace);
+router.get("/deletePlace", verifyToken, PlaceController.deletePlace);
 
 module.exports = router;
