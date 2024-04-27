@@ -1,6 +1,6 @@
 const Connection = require("./connection.model");
 
-exports.addConnection = async (req, res) => {
+exports.sendConnection = async (req, res) => {
   var {
     fromUserId,
     toId,

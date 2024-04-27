@@ -3,7 +3,7 @@ const ConnectionController = require("./connection.controller");
 const verifyToken = require('../../checkAccess'); 
 const router = express.Router();
 
-router.post("/addConnection", verifyToken, ConnectionController.addConnection);
+router.post("/sendConnection", verifyToken, ConnectionController.sendConnection);
 
 router.get("/getUserWiseConnection",verifyToken, ConnectionController.getUserWiseConnection);
 
