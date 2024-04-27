@@ -91,6 +91,31 @@ exports.addFriend = async (req, res) => {
   }
 };
 
+exports.addFriend = async (req, res) => {
+  try {
+    const userId = req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({ status: false, message: "Please enter UserId" });
+    }
+
+    const existingUser = await Connection.findById(userId);
+    if (!existingUser) {
+      return res.status(400).json({ status: false, message: "Wrong Id received." });
+    }
+
+    await Connection.findByIdAndUpdate(userId, { isrequest: true });
+
+    const updatedUser = await Connection.findById(userId);
+
+    return res.status(200).json({ status: true, message: "Friend added." });
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+  }
+};
+
+
+
 exports.friendList = async (req, res) => {
   try {
     const { fromUserId } = req.query;
