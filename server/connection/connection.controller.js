@@ -46,7 +46,7 @@ exports.addConnection = async (req, res) => {
     if (connectionSaved) {
       return res
         .status(200)
-        .json({ status: true, message: "Connection registered." });
+        .json({ status: true, message: "Send connection request." });
     } else {
       return res.status(200).json({ status: false, message: "Failed." });
     }
