@@ -11,7 +11,7 @@ const upload = multer({
 
 router.post("/addUser", upload.fields([{ name: "profilePic" }]),UserController.addUser);
 
-router.post("/updateUser", verifyToken , upload.fields([{ name: "profilePic" }]), UserController.updateUser);
+router.post("/updateUser" , upload.fields([{ name: "profilePic" }]), verifyToken, UserController.updateUser);
 
 router.get("/getAllUser", verifyToken, UserController.getAllUser);
 
