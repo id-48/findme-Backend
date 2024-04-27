@@ -79,13 +79,14 @@ exports.getUserWiseConnection = async (req, res) => {
   }
 };
 
-// exports.addFriend = async (req, res) => {
-//   try {
-   
-//     var user = await Connection.find({ _id: req.query.userId });
+exports.addFriend = async (req, res) => {
+  try {
+    await Connection.findByIdAndUpdate(req.query.userId, { isrequest: true });
 
+    const updatedUser = await Connection.findById(req.query.userId);
 
-//   } catch (error) {
-//     return res.status(500).json({ status: false, error: error.message || "Server Error" });
-//   }
-// };
+    return res.status(200).json({ status: true, message: "Friend added.", user: updatedUser });
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+  }
+};
