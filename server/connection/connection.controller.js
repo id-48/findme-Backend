@@ -90,3 +90,26 @@ exports.addFriend = async (req, res) => {
     return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
 };
+
+exports.friendlist = async (req, res) => {
+  try {
+    const { toId } = req.query;
+    const filteredConnections = await Connection.find({ toId, isrequest: true });
+
+    if (filteredConnections.length > 0) {
+      res.status(200).json({
+        status: true,
+        message: "Success.",
+        connections: filteredConnections,
+      });
+    } else {
+      res.status(200).json({
+        status: false,
+        message: "No connections found.",
+        connections: [],
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+  }
+};
