@@ -9,7 +9,7 @@ const upload = multer({
     storage,    
 });
 
-router.post("/addUser", verifyToken, upload.fields([{ name: "profilePic" }]),UserController.addUser);
+router.post("/addUser", upload.fields([{ name: "profilePic" }]),UserController.addUser);
 
 router.post("/updateUser", verifyToken , upload.fields([{ name: "profilePic" }]), UserController.updateUser);
 
