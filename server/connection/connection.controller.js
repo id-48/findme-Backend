@@ -59,7 +59,7 @@ exports.sendConnection = async (req, res) => {
 
 exports.getUserWiseConnection = async (req, res) => {
   try {
-    var allConnection = await Connection.find({ toId: req.query.toId });
+    var allConnection = await Connection.find({ fromUserId: req.query.fromUserId });
 
     if (allConnection.length > 0) {
       res.status(200).json({
