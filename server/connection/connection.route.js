@@ -4,5 +4,6 @@ const router = express.Router();
 
 router.post("/addConnection", ConnectionController.addConnection);
 
+router.get("/getUserWiseConnection", ConnectionController.getUserWiseConnection);
 
 module.exports = router;

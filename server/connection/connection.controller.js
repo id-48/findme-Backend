@@ -56,3 +56,25 @@ exports.addConnection = async (req, res) => {
       .json({ status: false, error: error.message || "Server Error" });
   }
 };
+
+exports.getUserWiseConnection = async (req, res) => {
+  try {
+    var allConnection = await Connection.find({ mono: req.query.mono });
+
+    if (allConnection.length > 0) {
+      res.status(200).json({
+        status: true,
+        message: "Success.",
+        connection: allConnection,
+      });
+    } else {
+      res.status(200).json({
+        status: false,
+        message: "Connection not found for the given mobile number.",
+        connection: [],
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+  }
+};
