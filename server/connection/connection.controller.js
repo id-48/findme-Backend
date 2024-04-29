@@ -220,36 +220,25 @@ exports.sendFriendRequest = async (req, res) => {
   }
 };
 
-// // API to receive friend requests
-// exports.receiveFriendRequests = async (req, res) => {
-//   const { toId } = req.query; // Assuming userId is passed as a parameter
-
-//   try {
-//     // Find all pending friend requests where the receiver is the current user
-//     const friendRequests = await Connection.find({ toId: toId, status: "pending" });
-
-//     if (!friendRequests) {
-//       return res.status(200).json({ status: true, message: "No pending friend requests found." });
-//     }
-
-//     return res.status(200).json({ status: true, friendRequests});
-//   } catch (error) {
-//     return res.status(500).json({ status: false, error: error.message || "Server Error" });
-//   }
-// };
-
+// API to receive friend requests
 exports.receiveFriendRequests = async (req, res) => {
-  const { toId } = req.query; // Assuming userId is part of the request parameters
+  const { toId } = req.query; // Assuming userId is passed as a parameter
 
   try {
-    // Retrieve pending friend requests where the 'to' field matches the userId
-    const friendRequests = await Connection.find({ "to.toId": toId, status: 'pending' });
+    // Find all pending friend requests where the receiver is the current user
+    const friendRequests = await Connection.find({ toId: toId, status: "pending" });
 
-    return res.status(200).json({ status: true, friendRequests });
+    if (!friendRequests) {
+      return res.status(200).json({ status: true, message: "No pending friend requests found." });
+    }
+
+    return res.status(200).json({ status: true, friendRequests});
   } catch (error) {
     return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
 };
+
+
 
 
 // API to approve or reject friend request
@@ -291,33 +280,41 @@ exports.getAllFriends = async (req, res) => {
   const { userId } = req.query;
 
   try {
-    // Find all connections where the status is "approved" and either fromUserId or toId matches the user's ID
-    const userFriends = await Connection.find({
+    // Find all connections where the status is either "approved" or "pending" and either from or to matches the user's ID
+    const userConnections = await Connection.find({
       $and: [
-        { status: "approved" },
-        { $or: [{ fromUserId: userId }, { toId: userId }] }
+        {
+          $or: [
+            { status: "approved" },
+            { $and: [{ status: "pending" }, { 'to.toId': userId }] } // Include pending requests where the user is the receiver
+          ]
+        },
+        { $or: [{ 'from.fromUserId': userId }, { 'to.toId': userId }] }
       ]
     });
 
-    if (!userFriends || userFriends.length === 0) {
+    if (!userConnections || userConnections.length === 0) {
       return res.status(200).json({ status: true, message: "No friends found for this user." });
     }
 
-    // Extract friend details (excluding the current user's details) and return
-    const friendsList = userFriends.map(connection => {
+    // Extract friend details and return
+    const friendsList = userConnections.map(connection => {
+      // Determine if the user is the sender or receiver in this connection
+      const isSender = connection.from.fromUserId === userId;
+
       return {
-        userId: connection.fromUserId !== userId ? connection.fromUserId : connection.toId,
-        firstName: connection.firstName,
-        lastName: connection.lastName,
-        userName: connection.userName,
-        profilePic: connection.profilePic,
-        mono: connection.mono,
-        countryCode: connection.countryCode,
-        address: connection.address,
-        latitude: connection.latitude,
-        longitude: connection.longitude,
-        countryName: connection.countryName,
-        fcmToken: connection.fcmToken
+        userId: isSender ? connection.to.mono : connection.from.mono,
+        firstName: isSender ? connection.to.firstName : connection.from.firstName,
+        lastName: isSender ? connection.to.lastName : connection.from.lastName,
+        userName: isSender ? connection.to.userName : connection.from.userName,
+        profilePic: isSender ? connection.to.profilePic : connection.from.profilePic,
+        mono: isSender ? connection.to.mono : connection.from.mono,
+        countryCode: isSender ? connection.to.countryCode : connection.from.countryCode,
+        address: isSender ? connection.to.address : connection.from.address,
+        latitude: isSender ? connection.to.latitude : connection.from.latitude,
+        longitude: isSender ? connection.to.longitude : connection.from.longitude,
+        countryName: isSender ? connection.to.countryName : connection.from.countryName,
+        fcmToken: isSender ? connection.to.fcmToken : connection.from.fcmToken
       };
     });
 
