@@ -45,7 +45,7 @@ exports.sendConnection = async (req, res) => {
 
     for (let i = 0; i < connectionSaved.length; i++) {
       const element = connectionSaved[i];
-      if (element.fromUserId == connectionSaved.fromUserId && element.toId == connectionSaved.toId ) {
+      if (element.fromUserId == existingConnection.fromUserId && element.toId == existingConnection.toId ) {
         return res
         .status(200)
         .json({ status: true, message: "Already send request." });
