@@ -218,11 +218,11 @@ exports.sendFriendRequest = async (req, res) => {
 
 // API to receive friend requests
 exports.receiveFriendRequests = async (req, res) => {
-  const { userId } = req.params; // Assuming userId is passed as a parameter
+  const { toId } = req.query; // Assuming userId is passed as a parameter
 
   try {
     // Find all pending friend requests where the receiver is the current user
-    const friendRequests = await Connection.find({ toId: userId, status: "pending" });
+    const friendRequests = await Connection.find({ toId: toId, status: "pending" });
 
     if (!friendRequests) {
       return res.status(200).json({ status: true, message: "No pending friend requests found." });
