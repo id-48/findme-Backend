@@ -224,7 +224,7 @@ exports.receiveFriendRequests = async (req, res) => {
     // Find all pending friend requests where the receiver is the current user
     const friendRequests = await Connection.find({ toId: userId, status: "pending" });
 
-    if (!friendRequests || friendRequests.length === 0) {
+    if (!friendRequests) {
       return res.status(200).json({ status: true, message: "No pending friend requests found." });
     }
 
