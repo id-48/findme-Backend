@@ -19,11 +19,11 @@ exports.sendConnection = async (req, res) => {
   try {
     var existingConnection = await Connection.findOne({ fromUserId });
 
-    if (existingConnection) {
-      return res
-        .status(200)
-        .json({ status: false, message: "Already sended connection request." });
-    }
+    // if (existingConnection) {
+    //   return res
+    //     .status(200)
+    //     .json({ status: false, message: "Already sended connection request." });
+    // }
 
     var newConnection = new Connection({
       fromUserId: fromUserId || "",
