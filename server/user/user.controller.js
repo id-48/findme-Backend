@@ -173,7 +173,7 @@ exports.userCheck = async (req, res) => {
     const existingUser = await User.findOne({ mono });
 
     if (existingUser) {
-      const token = jwt.sign({ id: newUser._id }, config.JWT_SECRET);
+      const token = jwt.sign({ id: existingUser._id }, config.JWT_SECRET);
       return res.status(200).json({ status: true, message: "User found", token: token });
     } else {
       return res.status(200).json({ status: false, message: "User not found" });
