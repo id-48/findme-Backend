@@ -228,7 +228,7 @@ exports.receiveFriendRequests = async (req, res) => {
       return res.status(200).json({ status: true, message: "No pending friend requests found." });
     }
 
-    return res.status(200).json({ status: true, friendRequests: friendRequests});
+    return res.status(200).json({ status: true, friendRequests});
   } catch (error) {
     return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
