@@ -266,3 +266,45 @@ exports.respondToFriendRequest = async (req, res) => {
     return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
 };
+
+
+// API to get all friends of a user
+exports.getAllFriends = async (req, res) => {
+  const { userId } = req.query;
+
+  try {
+    // Find all connections where the status is "approved" and either fromUserId or toId matches the user's ID
+    const userFriends = await Connection.find({
+      $and: [
+        { status: "approved" },
+        { $or: [{ fromUserId: userId }, { toId: userId }] }
+      ]
+    });
+
+    if (!userFriends || userFriends.length === 0) {
+      return res.status(200).json({ status: true, message: "No friends found for this user." });
+    }
+
+    // Extract friend details (excluding the current user's details) and return
+    const friendsList = userFriends.map(connection => {
+      return {
+        userId: connection.fromUserId !== userId ? connection.fromUserId : connection.toId,
+        firstName: connection.firstName,
+        lastName: connection.lastName,
+        userName: connection.userName,
+        profilePic: connection.profilePic,
+        mono: connection.mono,
+        countryCode: connection.countryCode,
+        address: connection.address,
+        latitude: connection.latitude,
+        longitude: connection.longitude,
+        countryName: connection.countryName,
+        fcmToken: connection.fcmToken
+      };
+    });
+
+    return res.status(200).json({ status: true, friendsList });
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+  }
+};
