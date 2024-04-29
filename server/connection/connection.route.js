@@ -19,7 +19,9 @@ router.post("/sendFriendRequest", verifyToken, ConnectionController.sendFriendRe
 
 router.get("/receiveFriendRequests",verifyToken, ConnectionController.receiveFriendRequests);
 
-router.get("/respondToFriendRequest",verifyToken, ConnectionController.respondToFriendRequest);
+router.post("/respondToFriendRequest",verifyToken, ConnectionController.respondToFriendRequest);
+
+router.get("/getAllFriends",verifyToken, ConnectionController.getAllFriends);
 
 
 module.exports = router;
