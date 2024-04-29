@@ -41,15 +41,27 @@ exports.sendConnection = async (req, res) => {
       fcmToken: fcmToken || "",
     });
 
-    var connectionSaved = await newConnection.save({isrequest:false});
+    var connectionSaved = await newConnection.save();
 
-    if (connectionSaved) {
-      return res
+    for (let i = 0; i < connectionSaved.length; i++) {
+      const element = connectionSaved[i];
+      if (element.fromUserId == connectionSaved.fromUserId && element.toId == connectionSaved.toId ) {
+        return res
         .status(200)
-        .json({ status: true, message: "Send connection request." });
-    } else {
-      return res.status(200).json({ status: false, message: "You are already friend." });
+        .json({ status: true, message: "Already send request." });
+      } else {
+        if (connectionSaved) {
+          return res
+            .status(200)
+            .json({ status: true, message: "Send connection request." });
+        } else {
+          return res.status(200).json({ status: false, message: "Failed." });
+        }
+      }
+      
     }
+
+    
   } catch (error) {
     return res
       .status(500)
