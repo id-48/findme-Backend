@@ -2,7 +2,7 @@
 
 // exports.sendConnection = async (req, res) => {
 //   var {
-//     fromUserId,
+//     fromId,
 //     toId,
 //     firstName,
 //     lastName,
@@ -26,7 +26,7 @@
 //     // }
 
 //     var newConnection = new Connection({
-//       fromUserId: fromUserId || "",
+//       fromId: fromId || "",
 //       toId: toId || "",
 //       firstName: firstName || "",
 //       lastName: lastName || "",
@@ -45,7 +45,7 @@
 
 //     for (let i = 0; i < connectionSaved.length; i++) {
 //       const element = connectionSaved[i];
-//       if (element.fromUserId == existingConnection.fromUserId && element.toId == existingConnection.toId ) {
+//       if (element.fromId == existingConnection.fromId && element.toId == existingConnection.toId ) {
 //         return res
 //         .status(200)
 //         .json({ status: true, message: "Already send request." });
@@ -71,7 +71,7 @@
 
 // exports.getUserWiseConnection = async (req, res) => {
 //   try {
-//     var allConnection = await Connection.find({ fromUserId: req.query.fromUserId });
+//     var allConnection = await Connection.find({ fromId: req.query.fromId });
 
 //     if (allConnection.length > 0) {
 //       res.status(200).json({
@@ -138,8 +138,8 @@
 
 // exports.friendList = async (req, res) => {
 //   try {
-//     const { fromUserId } = req.query;
-//     const filteredConnections = await Connection.find({ fromUserId, toId, isrequest: true });
+//     const { fromId } = req.query;
+//     const filteredConnections = await Connection.find({ fromId, toId, isrequest: true });
 
 //     if (filteredConnections.length > 0) {
 //       res.status(200).json({
@@ -169,7 +169,7 @@ exports.sendFriendRequest = async (req, res) => {
 
   try {
     // Check if a connection request has already been sent
-    const existingConnection = await Connection.findOne({ 'from.mono': from.fromUserId, 'to.mono': to.toId });
+    const existingConnection = await Connection.findOne({ 'from.mono': from.fromId, 'to.mono': to.toId });
 
     if (existingConnection) {
       return res.status(200).json({ status: false, message: "Friend request already sent." });
@@ -259,7 +259,7 @@ exports.respondToFriendRequest = async (req, res) => {
       await connection.save();
 
       // Here you can add logic to update friend lists of both users
-      // For example, update the friend list of the user who initiated the request (fromUserId)
+      // For example, update the friend list of the user who initiated the request (fromId)
       // and also update the friend list of the user who received the request (toId)
       
       return res.status(200).json({ status: true, message: "Friend request approved." });
@@ -289,7 +289,7 @@ exports.getAllFriends = async (req, res) => {
             { $and: [{ status: "pending" }, { 'to.toId': userId }] } // Include pending requests where the user is the receiver
           ]
         },
-        { $or: [{ 'from.fromUserId': userId }, { 'to.toId': userId }] }
+        { $or: [{ 'from.fromId': userId }, { 'to.toId': userId }] }
       ]
     });
 
@@ -300,10 +300,10 @@ exports.getAllFriends = async (req, res) => {
     // Extract friend details and return
     const friendsList = userConnections.map(connection => {
       // Determine if the user is the sender or receiver in this connection
-      const isSender = connection.from.fromUserId === userId;
+      const isSender = connection.from.fromId === userId;
 
       return {
-        userId: isSender ? connection.to.mono : connection.from.mono,
+        userId: isSender ? connection.to.toId : connection.from.fromId,
         firstName: isSender ? connection.to.firstName : connection.from.firstName,
         lastName: isSender ? connection.to.lastName : connection.from.lastName,
         userName: isSender ? connection.to.userName : connection.from.userName,
