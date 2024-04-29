@@ -259,6 +259,7 @@ exports.respondToFriendRequest = async (req, res) => {
       return res.status(200).json({ status: true, message: "Friend request approved." });
     } else {
       // If rejected, delete the connection request
+      connection.status = "rejected";
       await connection.remove();
       return res.status(200).json({ status: true, message: "Friend request rejected." });
     }
