@@ -280,15 +280,10 @@ exports.getAllFriends = async (req, res) => {
   const { userId } = req.query;
 
   try {
-    // Find all connections where the status is either "approved" or "pending" and either from or to matches the user's ID
+    // Find all connections where the status is "approved" and either from.fromId or to.toId matches the user's ID
     const userConnections = await Connection.find({
       $and: [
-        {
-          $or: [
-            { status: "approved" },
-            { $and: [{ status: "pending" }, { 'to.toId': userId }] } // Include pending requests where the user is the receiver
-          ]
-        },
+        { status: "approved" },
         { $or: [{ 'from.fromId': userId }, { 'to.toId': userId }] }
       ]
     });
@@ -297,26 +292,37 @@ exports.getAllFriends = async (req, res) => {
       return res.status(200).json({ status: true, message: "No friends found for this user." });
     }
 
-    // Extract friend details and return
-    const friendsList = userConnections.map(connection => {
-      // Determine if the user is the sender or receiver in this connection
-      const isSender = connection.from.fromId === userId;
-
-      return {
-        userId: isSender ? connection.to.toId : connection.from.fromId,
-        firstName: isSender ? connection.to.firstName : connection.from.firstName,
-        lastName: isSender ? connection.to.lastName : connection.from.lastName,
-        userName: isSender ? connection.to.userName : connection.from.userName,
-        profilePic: isSender ? connection.to.profilePic : connection.from.profilePic,
-        mono: isSender ? connection.to.mono : connection.from.mono,
-        countryCode: isSender ? connection.to.countryCode : connection.from.countryCode,
-        address: isSender ? connection.to.address : connection.from.address,
-        latitude: isSender ? connection.to.latitude : connection.from.latitude,
-        longitude: isSender ? connection.to.longitude : connection.from.longitude,
-        countryName: isSender ? connection.to.countryName : connection.from.countryName,
-        fcmToken: isSender ? connection.to.fcmToken : connection.from.fcmToken
-      };
-    });
+    // Extract friend details and format the API response
+    const friendsList = userConnections.map(connection => ({
+      to: {
+        toId: connection.to.toId,
+        firstName: connection.to.firstName,
+        lastName: connection.to.lastName,
+        userName: connection.to.userName,
+        profilePic: connection.to.profilePic,
+        mono: connection.to.mono,
+        countryCode: connection.to.countryCode,
+        address: connection.to.address,
+        latitude: connection.to.latitude,
+        longitude: connection.to.longitude,
+        countryName: connection.to.countryName,
+        fcmToken: connection.to.fcmToken
+      },
+      from: {
+        fromId: connection.from.fromId,
+        firstName: connection.from.firstName,
+        lastName: connection.from.lastName,
+        userName: connection.from.userName,
+        profilePic: connection.from.profilePic,
+        mono: connection.from.mono,
+        countryCode: connection.from.countryCode,
+        address: connection.from.address,
+        latitude: connection.from.latitude,
+        longitude: connection.from.longitude,
+        countryName: connection.from.countryName,
+        fcmToken: connection.from.fcmToken
+      }
+    }));
 
     return res.status(200).json({ status: true, friendsList });
   } catch (error) {
