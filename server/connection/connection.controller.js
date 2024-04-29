@@ -163,24 +163,13 @@ const Connection = require("./connection.model");
 
 exports.sendFriendRequest = async (req, res) => {
   const {
-    fromUserId,
-    toId,
-    firstName,
-    lastName,
-    userName,
-    profilePic,
-    mono,
-    countryCode,
-    address,
-    latitude,
-    longitude,
-    countryName,
-    fcmToken,
+    from,
+    to // Assuming status is also part of your request body
   } = req.body;
 
   try {
     // Check if a connection request has already been sent
-    const existingConnection = await Connection.findOne({ fromUserId, toId });
+    const existingConnection = await Connection.findOne({ 'from.mono': from.fromUserId, 'to.mono': to.toId });
 
     if (existingConnection) {
       return res.status(200).json({ status: false, message: "Friend request already sent." });
@@ -188,19 +177,34 @@ exports.sendFriendRequest = async (req, res) => {
 
     // Create a new connection request
     const newConnection = new Connection({
-      fromUserId: fromUserId || "",
-      toId: toId || "",
-      firstName: firstName || "",
-      lastName: lastName || "",
-      userName: userName || "",
-      profilePic: profilePic || [],
-      mono: mono || "",
-      countryCode: countryCode || "",
-      address: address || "",
-      latitude: latitude || "",
-      longitude: longitude || "",
-      countryName: countryName || "",
-      fcmToken: fcmToken || "",
+      from: {
+        fromId: from.fromId || "",
+        firstName: from.firstName || "",
+        lastName: from.lastName || "",
+        userName: from.userName || "",
+        profilePic: from.profilePic || [],
+        mono: from.mono || "",
+        countryCode: from.countryCode || "",
+        address: from.address || "",
+        latitude: from.latitude || "",
+        longitude: from.longitude || "",
+        countryName: from.countryName || "",
+        fcmToken: from.fcmToken || "",
+      },
+      to: {
+        toId: to.toId || "",
+        firstName: to.firstName || "",
+        lastName: to.lastName || "",
+        userName: to.userName || "",
+        profilePic: to.profilePic || [],
+        mono: to.mono || "",
+        countryCode: to.countryCode || "",
+        address: to.address || "",
+        latitude: to.latitude || "",
+        longitude: to.longitude || "",
+        countryName: to.countryName || "",
+        fcmToken: to.fcmToken || "",
+      },
     });
 
     // Save the connection request
@@ -216,19 +220,32 @@ exports.sendFriendRequest = async (req, res) => {
   }
 };
 
-// API to receive friend requests
+// // API to receive friend requests
+// exports.receiveFriendRequests = async (req, res) => {
+//   const { toId } = req.query; // Assuming userId is passed as a parameter
+
+//   try {
+//     // Find all pending friend requests where the receiver is the current user
+//     const friendRequests = await Connection.find({ toId: toId, status: "pending" });
+
+//     if (!friendRequests) {
+//       return res.status(200).json({ status: true, message: "No pending friend requests found." });
+//     }
+
+//     return res.status(200).json({ status: true, friendRequests});
+//   } catch (error) {
+//     return res.status(500).json({ status: false, error: error.message || "Server Error" });
+//   }
+// };
+
 exports.receiveFriendRequests = async (req, res) => {
-  const { toId } = req.query; // Assuming userId is passed as a parameter
+  const { toId } = req.query; // Assuming userId is part of the request parameters
 
   try {
-    // Find all pending friend requests where the receiver is the current user
-    const friendRequests = await Connection.find({ toId: toId, status: "pending" });
+    // Retrieve pending friend requests where the 'to' field matches the userId
+    const friendRequests = await Connection.find({ "to.toId": toId, status: 'pending' });
 
-    if (!friendRequests) {
-      return res.status(200).json({ status: true, message: "No pending friend requests found." });
-    }
-
-    return res.status(200).json({ status: true, friendRequests});
+    return res.status(200).json({ status: true, friendRequests });
   } catch (error) {
     return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
