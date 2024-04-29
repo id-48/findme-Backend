@@ -21,7 +21,8 @@ exports.addUser = async (req, res) => {
     var existingUser = await User.findOne({ mono });
 
     if (existingUser) {
-      return res.status(200).json({ status: false, message: "User already exists." });
+      const token = jwt.sign({ id: newUser._id }, config.JWT_SECRET);
+      return res.status(200).json({ status: true, message: "User already exists.",token: token });
     }
 
     var newUser = new User({
