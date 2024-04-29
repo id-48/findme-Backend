@@ -138,8 +138,8 @@ exports.removeRequest = async (req, res) => {
 
 exports.friendList = async (req, res) => {
   try {
-    const { fromUserId } = req.query;
-    const filteredConnections = await Connection.find({ fromUserId, isrequest: true });
+    const { fromUserId, toId } = req.query;
+    const filteredConnections = await Connection.find({ fromUserId, toId, isrequest: true });
 
     if (filteredConnections.length > 0) {
       res.status(200).json({
