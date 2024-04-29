@@ -17,7 +17,7 @@ exports.sendConnection = async (req, res) => {
     fcmToken,
   } = req.body;
   try {
-    var existingConnection = await Connection.findOne({ fromUserId });
+    var existingConnection = await Connection.findOne();
 
     // if (existingConnection) {
     //   return res
