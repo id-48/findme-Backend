@@ -1,163 +1,164 @@
 const Connection = require("./connection.model");
+const User = require("../user/user.model");
 
-exports.sendConnection = async (req, res) => {
-  var {
-    fromId,
-    toId,
-    firstName,
-    lastName,
-    userName,
-    profilePic,
-    mono,
-    countryCode,
-    address,
-    lattitude,
-    longtitude,
-    countryName,
-    fcmToken,
-  } = req.body;
-  try {
-    var existingConnection = await Connection.findOne();
+// exports.sendConnection = async (req, res) => {
+//   var {
+//     fromId,
+//     toId,
+//     firstName,
+//     lastName,
+//     userName,
+//     profilePic,
+//     mono,
+//     countryCode,
+//     address,
+//     lattitude,
+//     longtitude,
+//     countryName,
+//     fcmToken,
+//   } = req.body;
+//   try {
+//     var existingConnection = await Connection.findOne();
 
-    // if (existingConnection) {
-    //   return res
-    //     .status(200)
-    //     .json({ status: false, message: "Already sended connection request." });
-    // }
+//     // if (existingConnection) {
+//     //   return res
+//     //     .status(200)
+//     //     .json({ status: false, message: "Already sended connection request." });
+//     // }
 
-    var newConnection = new Connection({
-      fromId: fromId || "",
-      toId: toId || "",
-      firstName: firstName || "",
-      lastName: lastName || "",
-      userName: userName || "",
-      profilePic: profilePic || [],
-      mono: mono || "",
-      countryCode: countryCode || "",
-      address: address || "",
-      lattitude: lattitude || "",
-      longtitude: longtitude || "",
-      countryName: countryName || "",
-      fcmToken: fcmToken || "",
-    });
+//     var newConnection = new Connection({
+//       fromId: fromId || "",
+//       toId: toId || "",
+//       firstName: firstName || "",
+//       lastName: lastName || "",
+//       userName: userName || "",
+//       profilePic: profilePic || [],
+//       mono: mono || "",
+//       countryCode: countryCode || "",
+//       address: address || "",
+//       lattitude: lattitude || "",
+//       longtitude: longtitude || "",
+//       countryName: countryName || "",
+//       fcmToken: fcmToken || "",
+//     });
 
-    var connectionSaved = await newConnection.save();
+//     var connectionSaved = await newConnection.save();
 
-    for (let i = 0; i < connectionSaved.length; i++) {
-      const element = connectionSaved[i];
-      if (element.fromId == existingConnection.fromId && element.toId == existingConnection.toId ) {
-        return res
-        .status(200)
-        .json({ status: true, message: "Already send request." });
-      } else {
-        if (connectionSaved) {
-          return res
-            .status(200)
-            .json({ status: true, message: "Send connection request." });
-        } else {
-          return res.status(200).json({ status: false, message: "Failed." });
-        }
-      }
+//     for (let i = 0; i < connectionSaved.length; i++) {
+//       const element = connectionSaved[i];
+//       if (element.fromId == existingConnection.fromId && element.toId == existingConnection.toId ) {
+//         return res
+//         .status(200)
+//         .json({ status: true, message: "Already send request." });
+//       } else {
+//         if (connectionSaved) {
+//           return res
+//             .status(200)
+//             .json({ status: true, message: "Send connection request." });
+//         } else {
+//           return res.status(200).json({ status: false, message: "Failed." });
+//         }
+//       }
       
-    }
+//     }
 
     
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ status: false, error: error.message || "Server Error" });
-  }
-};
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ status: false, error: error.message || "Server Error" });
+//   }
+// };
 
-exports.getUserWiseConnection = async (req, res) => {
-  try {
-    var allConnection = await Connection.find({ fromId: req.query.fromId });
+// exports.getUserWiseConnection = async (req, res) => {
+//   try {
+//     var allConnection = await Connection.find({ fromId: req.query.fromId });
 
-    if (allConnection.length > 0) {
-      res.status(200).json({
-        status: true,
-        message: "Success.",
-        connection: allConnection,
-      });
-    } else {
-      res.status(200).json({
-        status: false,
-        message: "Connection not found.",
-        connection: [],
-      });
-    }
-  } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
-  }
-};
-
-
-exports.addFriend = async (req, res) => {
-  try {
-    const userId = req.query.userId;
-
-    if (!userId) {
-      return res.status(400).json({ status: false, message: "Please enter UserId" });
-    }
-
-    const existingUser = await Connection.findById(userId);
-    if (!existingUser) {
-      return res.status(400).json({ status: false, message: "Wrong Id received." });
-    }
-
-    await Connection.findByIdAndUpdate(userId, { isrequest: true });
-
-    const updatedUser = await Connection.findById(userId);
-
-    return res.status(200).json({ status: true, message: "Friend added." });
-  } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
-  }
-};
-
-exports.removeRequest = async (req, res) => {
-  try {
-    const userId = req.query.userId;
-
-    if (!userId) {
-      return res.status(400).json({ status: false, message: "Please enter UserId" });
-    }
-
-    const existingUser = await Connection.findById(userId);
-    if (!existingUser) {
-      return res.status(400).json({ status: false, message: "Wrong Id received." });
-    }
-    var removeRequest = await Connection.deleteOne({ _id: userId });
+//     if (allConnection.length > 0) {
+//       res.status(200).json({
+//         status: true,
+//         message: "Success.",
+//         connection: allConnection,
+//       });
+//     } else {
+//       res.status(200).json({
+//         status: false,
+//         message: "Connection not found.",
+//         connection: [],
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(500).json({ status: false, error: error.message || "Server Error" });
+//   }
+// };
 
 
-    return res.status(200).json({ status: true, message: "Success" });
-  } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
-  }
-};
+// exports.addFriend = async (req, res) => {
+//   try {
+//     const userId = req.query.userId;
 
-exports.friendList = async (req, res) => {
-  try {
-    const { fromId } = req.query;
-    const filteredConnections = await Connection.find({ fromId, toId, isrequest: true });
+//     if (!userId) {
+//       return res.status(400).json({ status: false, message: "Please enter UserId" });
+//     }
 
-    if (filteredConnections.length > 0) {
-      res.status(200).json({
-        status: true,
-        message: "Success.",
-        connections: filteredConnections,
-      });
-    } else {
-      res.status(200).json({
-        status: false,
-        message: "No connections found.",
-        connections: [],
-      });
-    }
-  } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
-  }
-};
+//     const existingUser = await Connection.findById(userId);
+//     if (!existingUser) {
+//       return res.status(400).json({ status: false, message: "Wrong Id received." });
+//     }
+
+//     await Connection.findByIdAndUpdate(userId, { isrequest: true });
+
+//     const updatedUser = await Connection.findById(userId);
+
+//     return res.status(200).json({ status: true, message: "Friend added." });
+//   } catch (error) {
+//     return res.status(500).json({ status: false, error: error.message || "Server Error" });
+//   }
+// };
+
+// exports.removeRequest = async (req, res) => {
+//   try {
+//     const userId = req.query.userId;
+
+//     if (!userId) {
+//       return res.status(400).json({ status: false, message: "Please enter UserId" });
+//     }
+
+//     const existingUser = await Connection.findById(userId);
+//     if (!existingUser) {
+//       return res.status(400).json({ status: false, message: "Wrong Id received." });
+//     }
+//     var removeRequest = await Connection.deleteOne({ _id: userId });
+
+
+//     return res.status(200).json({ status: true, message: "Success" });
+//   } catch (error) {
+//     return res.status(500).json({ status: false, error: error.message || "Server Error" });
+//   }
+// };
+
+// exports.friendList = async (req, res) => {
+//   try {
+//     const { fromId } = req.query;
+//     const filteredConnections = await Connection.find({ fromId, toId, isrequest: true });
+
+//     if (filteredConnections.length > 0) {
+//       res.status(200).json({
+//         status: true,
+//         message: "Success.",
+//         connections: filteredConnections,
+//       });
+//     } else {
+//       res.status(200).json({
+//         status: false,
+//         message: "No connections found.",
+//         connections: [],
+//       });
+//     }
+//   } catch (error) {
+//     return res.status(500).json({ status: false, error: error.message || "Server Error" });
+//   }
+// };
 
 // const Connection = require("./connection.model");
 
@@ -337,3 +338,132 @@ exports.friendList = async (req, res) => {
 //     return res.status(500).json({ status: false, error: error.message || "Server Error" });
 //   }
 // };
+
+
+exports.sendFriendRequest = async (req, res) => {
+    var {
+      senderId,
+      reciverId,
+      status,
+    } = req.body;
+    try {
+      var existingConnection = await Connection.findOne();
+
+      // if (existingConnection) {
+      //   return res
+      //     .status(200)
+      //     .json({ status: false, message: "Already sended connection request." });
+      // }
+
+      var newConnection = new Connection({
+        senderId: senderId || "",
+        reciverId: reciverId || "",
+        status: status || "",
+      });
+
+      var connectionSaved = await newConnection.save();
+
+      if (connectionSaved) {
+        return res
+          .status(200)
+          .json({ status: true, message: "Send connection request." });
+      } else {
+        return res.status(200).json({ status: false, message: "Failed." });
+      }
+      
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: false, error: error.message || "Server Error" });
+    }
+};
+
+
+exports.receiveFriendRequest = async (req, res) => {
+  const { userId } = req.query;
+
+  try {
+    const pendingRequests = await Connection.find({ reciverId: userId, status: 'pending' });
+
+    if (!pendingRequests || pendingRequests.length === 0) {
+      return res.status(200).json({ status: false, message: 'No pending friend requests found.' });
+    }
+
+    const senderIds = pendingRequests.map(request => request.senderId);
+
+    const senders = await User.find({ _id: { $in: senderIds } });
+
+    if (!senders || senders.length === 0) {
+      return res.status(200).json({ status: false, message: 'No sender details found.' });
+    }
+
+    return res.status(200).json({ status: true, message: 'Pending friend requests found.', senders });
+    
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || 'Server Error' });
+  }
+};
+
+
+exports.makeFriend = async (req, res) => {
+  const { senderId, reciverId, status } = req.body;
+
+  try {
+    let message = '';
+    let updatedConnection;
+
+    const connection = await Connection.findOne({ senderId, reciverId });
+
+    if (!connection) {
+      return res.status(404).json({ status: false, message: 'Friend request not found.' });
+    }
+
+    connection.status = status;
+    updatedConnection = await connection.save();
+
+    if (status === 'approved') {
+      message = 'Friend request approved.';
+    } else if (status === 'rejected') {
+      message = 'Friend request rejected.';
+      await Connection.deleteOne({ senderId, reciverId });
+    } else {
+      return res.status(400).json({ status: false, message: 'Invalid status.' });
+    }
+
+    return res.status(200).json({ status: true, message, updatedConnection });
+    
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || 'Server Error' });
+  }
+};
+
+
+exports.friendList = async (req, res) => {
+  const { userId } = req.query;
+
+  try {
+    const connections = await Connection.find({
+      $or: [{ senderId: userId }, { reciverId: userId }],
+      status: 'approved'
+    });
+
+    if (!connections || connections.length === 0) {
+      return res.status(200).json({ status: false, message: 'No friend connections found.' });
+    }
+
+    const friendIds = connections.map(connection => {
+      return connection.senderId === userId ? connection.reciverId : connection.senderId;
+    });
+
+    const friends = await User.find({ _id: { $in: friendIds } });
+
+    if (!friends || friends.length === 0) {
+      return res.status(200).json({ status: false, message: 'No friends found.' });
+    }
+
+    return res.status(200).json({ status: true, message: 'Friend list found.', friends });
+    
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || 'Server Error' });
+  }
+};

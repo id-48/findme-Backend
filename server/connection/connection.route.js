@@ -3,15 +3,15 @@ const ConnectionController = require("./connection.controller");
 const verifyToken = require('../../checkAccess'); 
 const router = express.Router();
 
-router.post("/sendConnection", verifyToken, ConnectionController.sendConnection);
+// router.post("/sendConnection", verifyToken, ConnectionController.sendConnection);
 
-router.get("/getUserWiseConnection",verifyToken, ConnectionController.getUserWiseConnection);
+// router.get("/getUserWiseConnection",verifyToken, ConnectionController.getUserWiseConnection);
 
-router.get("/addFriend",verifyToken, ConnectionController.addFriend);
+// router.get("/addFriend",verifyToken, ConnectionController.addFriend);
 
-router.get("/removeRequest",verifyToken, ConnectionController.removeRequest);
+// router.get("/removeRequest",verifyToken, ConnectionController.removeRequest);
 
-router.get("/friendList",verifyToken, ConnectionController.friendList);
+// router.get("/friendList",verifyToken, ConnectionController.friendList);
 
 
 
@@ -22,6 +22,16 @@ router.get("/friendList",verifyToken, ConnectionController.friendList);
 // router.post("/respondToFriendRequest",verifyToken, ConnectionController.respondToFriendRequest);
 
 // router.get("/getAllFriends",verifyToken, ConnectionController.getAllFriends);
+
+
+router.post("/sendFriendRequest", verifyToken, ConnectionController.sendFriendRequest);
+
+router.get("/receiveFriendRequest", verifyToken, ConnectionController.receiveFriendRequest);
+
+router.post("/makeFriend", verifyToken, ConnectionController.makeFriend);
+
+router.get("/friendList", verifyToken, ConnectionController.friendList);
+
 
 
 module.exports = router;
