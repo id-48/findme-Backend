@@ -412,7 +412,7 @@ exports.makeFriend = async (req, res) => {
     let message = '';
     let updatedConnection;
 
-    const connection = await Connection.findOne({ senderId, reciverId });
+    const connection = await Connection.findOne({ senderId, reciverId});
 
     if (!connection) {
       return res.status(404).json({ status: false, message: 'Friend request not found.' });
@@ -423,6 +423,7 @@ exports.makeFriend = async (req, res) => {
 
     if (status === 'approved') {
       message = 'Friend request approved.';
+
     } else if (status === 'rejected') {
       message = 'Friend request rejected.';
       await Connection.deleteOne({ senderId, reciverId });
