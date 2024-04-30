@@ -347,13 +347,13 @@ exports.sendFriendRequest = async (req, res) => {
       status,
     } = req.body;
     try {
-      var existingConnection = await Connection.findOne();
+      var existingConnection = await Connection.findOne({reciverId: reciverId, senderId: senderId});
 
-      // if (existingConnection) {
-      //   return res
-      //     .status(200)
-      //     .json({ status: false, message: "Already sended connection request." });
-      // }
+      if (existingConnection) {
+        return res
+          .status(200)
+          .json({ status: false, message: "Already sended connection request." });
+      }
 
       var newConnection = new Connection({
         senderId: senderId || "",
