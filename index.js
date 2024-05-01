@@ -5,6 +5,8 @@ const config = require("./config");
 const path = require("path");
 const bodyParser = require('body-parser');
 const cors = require("cors");
+const http = require("http").createServer(app); 
+const { initializeSocket } = require("./chatSocket");
 
 app.use(cors());
 app.use(express.json());
@@ -33,6 +35,10 @@ app.use("/places", Places);
 const Connection = require("./server/connection/connection.route");
 app.use("/connection", Connection);
 
+// Chat route
+const Chat = require("./server/chat/chat.route");
+app.use("/chat", Chat);
+
 
 //mongodb connection
 mongoose.connect(config.MONGOOSE_URL, {
@@ -47,7 +53,15 @@ db.once("open", () => {
     console.log("MONGO: successfully connected to db");
 });
 
+// // start the server
+// app.listen(config.PORT, () => {
+//     console.log("Magic happens on port " + config.PORT);
+// });
+
+// Initialize Socket.IO
+initializeSocket(http);
+
 // start the server
-app.listen(config.PORT, () => {
+http.listen(config.PORT, () => {
     console.log("Magic happens on port " + config.PORT);
 });
