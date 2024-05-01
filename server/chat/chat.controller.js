@@ -1,18 +1,36 @@
 const { getIO } = require("../../chatSocket"); 
 const Chat = require("../chat/chat.model");
 
-// Get all users who chat with each other
-exports.getAllChats = async (req, res) => {
-  try {
-    const chats = await Chat.find().populate('senderId receiverId');
-    res.status(200).json({ status: true, chats });
+// // Get all users who chat with each other
+// exports.getAllChats = async (req, res) => {
+//   try {
+//     const chats = await Chat.find().populate('senderId receiverId');
+//     res.status(200).json({ status: true, chats });
 
-    // Emit event to update clients with new chat list
-    getIO().emit('allChats', chats);
-  } catch (error) {
-    res.status(500).json({ status: false, error: error.message || 'Server Error' });
-  }
-};
+//     // Emit event to update clients with new chat list
+//     getIO().emit('allChats', chats);
+//   } catch (error) {
+//     res.status(500).json({ status: false, error: error.message || 'Server Error' });
+//   }
+// };
+
+exports.getAllChats = async (req, res) => {
+    try {
+      const chats = await Chat.find().populate({senderId, receiverId});
+      res.status(200).json({ status: true, chats });
+  
+      // Emit event to update clients with new chat list
+      getIO().emit('allChats', chats);
+  
+      // Join rooms for one-to-one messaging
+      chats.forEach(chat => {
+        const roomName = `${chat.senderId}-${chat.receiverId}`;
+        getIO().emit('joinRoom', roomName);
+      });
+    } catch (error) {
+      res.status(500).json({ status: false, error: error.message || 'Server Error' });
+    }
+  };
 
 // Send user message
 // exports.sendMessage = async (req, res) => {
