@@ -210,6 +210,7 @@ exports.getUser = async (req, res) => {
   }
 };
 
+
 exports.getLocationWiseUser = async (req, res) => {
   try {
     const { radius, latitude, longitude } = req.query;
@@ -230,7 +231,9 @@ exports.getLocationWiseUser = async (req, res) => {
         { latitude: userLat, longitude: userLon }
       );
       return distance <= radius * 1000;
-    });
+    }).limit(req.query.limit)
+    .skip((req.query.pageNo - 1) * req.query.limit)
+    .sort({ createdAt: -1 });
 
     res.status(200).json({
       status: true,
