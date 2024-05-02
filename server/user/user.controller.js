@@ -234,22 +234,17 @@ exports.getUser = async (req, res) => {
 
 exports.getLocationWiseUser = async (req, res) => {
   try {
-    const { radius, latitude, longitude, mono  } = req.query;
+    const { radius, latitude, longitude, mono, limit, pageNo } = req.query;
 
-    if (!radius || !latitude || !longitude) {
-      return res
-        .status(400)
-        .json({ status: false, message: "Required parameters missing." });
+    if (!radius || !latitude || !longitude || !mono) {
+      return res.status(400).json({ status: false, message: "Required parameters missing." });
     }
 
     const lat = parseFloat(latitude);
     const lon = parseFloat(longitude);
 
-    const allUsers = await User.find()
-      .limit(req.query.limit)
-      .skip((req.query.pageNo - 1) * req.query.limit)
-      .sort({ createdAt: -1 });
-    const nearbyUsers = allUsers.filter((user) => {
+    const allUsers = await User.find();
+    const nearbyUsers = allUsers.filter(user => {
       const userLat = parseFloat(user.lattitude);
       const userLon = parseFloat(user.longtitude);
       const distance = geolib.getDistance(
@@ -259,24 +254,24 @@ exports.getLocationWiseUser = async (req, res) => {
       return distance <= radius * 1000;
     });
 
-       const currentUser = await User.findOne({ mono });
+    const currentUser = await User.findOne({ mono });
 
-       const currentUserId = currentUser ? currentUser._id : null;
+    const currentUserId = currentUser ? currentUser._id : null;
 
-      //  if (mono) {
-      //   nearbyUsers = nearbyUsers.filter(user => user.mono !== mono);
-      // }
+    const filteredUsers = nearbyUsers.filter(user => String(user._id) !== String(currentUserId));
+
+    const paginatedUsers = filteredUsers.slice((pageNo - 1) * limit, pageNo * limit);
+
 
     res.status(200).json({
       status: true,
       message: "Success.",
-      totalUser: allUsers.length,
+      totalUser: allUsers.length - 1,
       currentUserId: currentUserId,
-      User: nearbyUsers,
+      user: paginatedUsers,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ status: false, error: error.message || "Server Error" });
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
 };
+
