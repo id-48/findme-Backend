@@ -15,6 +15,8 @@ router.post("/updateUser" , upload.fields([{ name: "profilePic" }]), verifyToken
 
 router.get("/getAllUser", verifyToken, UserController.getAllUser);
 
+router.get("/getLocationWiseUser", verifyToken, UserController.getLocationWiseUser);
+
 router.get("/getUser", verifyToken, UserController.getUser);
 
 router.get("/deleteUser", verifyToken , UserController.deleteUser);
