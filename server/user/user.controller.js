@@ -5,16 +5,17 @@ const config = require('../../config');
 
 exports.addUser = async (req, res) => {
   var {
-    firstName,
-    lastName,
-    userName,
+    name,
     profilePic,
+    bio,
     mono,
     countryCode,
-    address,
-    latitude,
-    longitude,
-    countryName,
+    lastVisitedPlace,
+    lattitude,
+    longtitude,
+    lastActivate,
+    gender,
+    languages,
     fcmToken,
   } = req.body;
   try {
@@ -25,16 +26,17 @@ exports.addUser = async (req, res) => {
     }
 
     var newUser = new User({
-      firstName: firstName || "",
-      lastName: lastName || "",
-      userName: userName || "",
+      name: name || "",
       profilePic: profilePic || [],
+      bio: bio || "",
       mono: mono || "",
       countryCode: countryCode || "",
-      address: address || "",
-      latitude: latitude || "",
-      longitude: longitude || "",
-      countryName: countryName || "",
+      lastVisitedPlace: lastVisitedPlace || [],
+      lattitude: lattitude || "",
+      longtitude: longtitude || "",
+      lastActivate: lastActivate || "",
+      gender: gender || "",
+      languages: languages || [],
       fcmToken: fcmToken || "",
     });
 
@@ -59,16 +61,17 @@ exports.addUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   var {
     userId,
-    firstName,
-    lastName,
-    userName,
+    name,
     profilePic,
+    bio,
     mono,
     countryCode,
-    address,
+    lastVisitedPlace,
     lattitude,
     longtitude,
-    countryName,
+    lastActivate,
+    gender,
+    languages,
     fcmToken,
   } = req.body;
 
@@ -77,16 +80,17 @@ exports.updateUser = async (req, res) => {
 
     if (existingUser) {
 
-      existingUser.firstName = firstName != "" ? firstName : existingUser.firstName;
-      existingUser.lastName = lastName != "" ? lastName : existingUser.lastName;
-      existingUser.userName = userName != "" ? userName : existingUser.userName;
-      existingUser.profilePic = profilePic != "" ? profilePic : existingUser.profilePic;
+      existingUser.name = name != "" ? name : existingUser.name;
+      existingUser.profilePic = profilePic != [] ? profilePic : existingUser.profilePic;
+      existingUser.bio = bio != "" ? bio : existingUser.bio;
       existingUser.mono = mono != "" ? mono : existingUser.mono;
       existingUser.countryCode = countryCode != "" ? countryCode : existingUser.countryCode;
-      existingUser.address = address != "" ? address : existingUser.address;
+      existingUser.lastVisitedPlace = lastVisitedPlace != [] ? lastVisitedPlace : existingUser.lastVisitedPlace;
       existingUser.lattitude = lattitude != "" ? lattitude : existingUser.lattitude;
       existingUser.longtitude = longtitude != "" ? longtitude : existingUser.longtitude;
-      existingUser.countryName = countryName != "" ? countryName : existingUser.countryName;
+      existingUser.lastActivate = lastActivate != "" ? lastActivate : existingUser.lastActivate;
+      existingUser.gender = gender != "" ? gender : existingUser.gender;
+      existingUser.languages = languages != [] ? languages : existingUser.languages;
       existingUser.fcmToken = fcmToken != "" ? fcmToken : existingUser.fcmToken;
 
       if (req.files.profilePic != undefined) {
