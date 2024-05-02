@@ -234,7 +234,7 @@ exports.getUser = async (req, res) => {
 
 exports.getLocationWiseUser = async (req, res) => {
   try {
-    const { radius, latitude, longitude } = req.query;
+    const { radius, latitude, longitude, mono  } = req.query;
 
     if (!radius || !latitude || !longitude) {
       return res
@@ -259,10 +259,19 @@ exports.getLocationWiseUser = async (req, res) => {
       return distance <= radius * 1000;
     });
 
+       const currentUser = await User.findOne({ mono });
+
+       const currentUserId = currentUser ? currentUser._id : null;
+
+      //  if (mono) {
+      //   nearbyUsers = nearbyUsers.filter(user => user.mono !== mono);
+      // }
+
     res.status(200).json({
       status: true,
       message: "Success.",
-      totalUser: nearbyUsers.length,
+      totalUser: allUsers.length,
+      currentUserId: currentUserId,
       User: nearbyUsers,
     });
   } catch (error) {
