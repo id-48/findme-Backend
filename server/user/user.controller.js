@@ -2,6 +2,7 @@ const User = require("./user.model");
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const config = require('../../config'); 
+const geolib = require('geolib');
 
 exports.addUser = async (req, res) => {
   var {
@@ -204,6 +205,39 @@ exports.getUser = async (req, res) => {
         User: null,
       });
     }
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+  }
+};
+
+exports.getLocationWiseUser = async (req, res) => {
+  try {
+    const { radius, latitude, longitude } = req.query;
+
+    if (!radius || !latitude || !longitude) {
+      return res.status(400).json({ status: false, message: "Required parameters missing." });
+    }
+
+    const lat = parseFloat(latitude);
+    const lon = parseFloat(longitude);
+
+    const allUsers = await User.find();
+    const nearbyUsers = allUsers.filter(user => {
+      const userLat = parseFloat(user.lattitude);
+      const userLon = parseFloat(user.longtitude);
+      const distance = geolib.getDistance(
+        { latitude: lat, longitude: lon },
+        { latitude: userLat, longitude: userLon }
+      );
+      return distance <= radius * 1000;
+    });
+
+    res.status(200).json({
+      status: true,
+      message: "Success.",
+      totalUser: nearbyUsers.length,
+      User: nearbyUsers,
+    });
   } catch (error) {
     return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
