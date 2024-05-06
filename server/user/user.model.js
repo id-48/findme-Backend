@@ -5,6 +5,8 @@ const UsersSchema = new mongoose.Schema(
         name: { type: String, default: "" },
         profilePic: { type: Array, default: [] },
         bio: { type: String, default:"" },
+        email: { type: String, default:"" },
+        age: { type: String, default:"" },
         mono: { type: String, default: "" },
         countryCode: { type: String, default: "" },
         lastVisitedPlace: { type: [String], default: [] },

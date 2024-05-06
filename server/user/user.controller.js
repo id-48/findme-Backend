@@ -1,4 +1,5 @@
 const User = require("./user.model");
+const Place = require("../place/place.model");
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const config = require("../../config");
@@ -9,6 +10,8 @@ exports.addUser = async (req, res) => {
     name,
     profilePic,
     bio,
+    email,
+    age,
     mono,
     countryCode,
     lastVisitedPlace,
@@ -32,6 +35,8 @@ exports.addUser = async (req, res) => {
       name: name || "",
       profilePic: profilePic || [],
       bio: bio || "",
+      email: email || "",
+      age: age || "",
       mono: mono || "",
       countryCode: countryCode || "",
       lastVisitedPlace: lastVisitedPlace || [],
@@ -71,6 +76,8 @@ exports.updateUser = async (req, res) => {
     name,
     profilePic,
     bio,
+    email,
+    age,
     mono,
     countryCode,
     lastVisitedPlace,
@@ -91,6 +98,8 @@ exports.updateUser = async (req, res) => {
         profilePic != [] ? profilePic : existingUser.profilePic;
       existingUser.bio = bio != "" ? bio : existingUser.bio;
       existingUser.mono = mono != "" ? mono : existingUser.mono;
+      existingUser.email = email != "" ? email : existingUser.email;
+      existingUser.age = age != "" ? age : existingUser.age;
       existingUser.countryCode =
         countryCode != "" ? countryCode : existingUser.countryCode;
       existingUser.lastVisitedPlace =
@@ -234,7 +243,7 @@ exports.getUser = async (req, res) => {
 
 exports.getLocationWiseUser = async (req, res) => {
   try {
-    const { radius, latitude, longitude, mono, limit, pageNo } = req.query;
+    const { radius, latitude, longitude, mono, limit, pageNo, ageMin, ageMax, gender } = req.query;
 
     if (!radius || !latitude || !longitude || !mono) {
       return res.status(400).json({ status: false, message: "Required parameters missing." });
@@ -244,6 +253,13 @@ exports.getLocationWiseUser = async (req, res) => {
     const lon = parseFloat(longitude);
 
     const allUsers = await User.find();
+
+    const allMobileNumbers = allUsers.map(user => user.mono);
+
+    const places = await Place.find({ mono: { $in: allMobileNumbers } });
+
+    const placeNames = [...new Set(places.map(place => place.placeName))];
+
     const nearbyUsers = allUsers.filter(user => {
       const userLat = parseFloat(user.lattitude);
       const userLon = parseFloat(user.longtitude);
@@ -254,11 +270,14 @@ exports.getLocationWiseUser = async (req, res) => {
       return distance <= radius * 1000;
     });
 
-    const currentUser = await User.findOne({ mono });
+    let filteredUsers = nearbyUsers;
+    if (ageMin && ageMax) {
+      filteredUsers = filteredUsers.filter(user => user.age >= ageMin && user.age <= ageMax);
+    }
 
-    const currentUserId = currentUser ? currentUser._id : null;
-
-    const filteredUsers = nearbyUsers.filter(user => String(user._id) !== String(currentUserId));
+    if (gender) {
+      filteredUsers = filteredUsers.filter(user => user.gender === gender);
+    }
 
     let paginatedUsers;
 
@@ -270,11 +289,14 @@ exports.getLocationWiseUser = async (req, res) => {
       paginatedUsers = filteredUsers.slice(startIdx, endIdx);
     }
 
+    paginatedUsers.forEach(user => {
+      user.lastVisitedPlace = placeNames;
+    });
+
     res.status(200).json({
       status: true,
       message: "Success.",
       totalUser: allUsers.length - 1,
-      currentUserId: currentUserId,
       user: paginatedUsers,
     });
   } catch (error) {
