@@ -260,7 +260,7 @@ exports.getLocationWiseUser = async (req, res) => {
 
     const filteredUsers = nearbyUsers.filter(user => String(user._id) !== String(currentUserId));
 
-    const paginatedUsers = filteredUsers.slice((pageNo - 1) * limit, pageNo * limit);
+    const paginatedUsers = filteredUsers.limit(limit).skip((pageNo - 1) * limit).sort({ createdAt: -1 });
 
 
     res.status(200).json({
