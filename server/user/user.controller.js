@@ -260,8 +260,15 @@ exports.getLocationWiseUser = async (req, res) => {
 
     const filteredUsers = nearbyUsers.filter(user => String(user._id) !== String(currentUserId));
 
-    const paginatedUsers = filteredUsers.limit(limit).skip((pageNo - 1) * limit).sort({ createdAt: -1 });
+    let paginatedUsers;
 
+    if (!pageNo && !limit) {
+      paginatedUsers = filteredUsers;
+    } else {
+      const startIdx = pageNo ? (pageNo - 1) * limit : 0;
+      const endIdx = pageNo ? pageNo * limit : filteredUsers.length;
+      paginatedUsers = filteredUsers.slice(startIdx, endIdx);
+    }
 
     res.status(200).json({
       status: true,
@@ -274,4 +281,3 @@ exports.getLocationWiseUser = async (req, res) => {
     return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
 };
-
