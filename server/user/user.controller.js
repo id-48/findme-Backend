@@ -243,10 +243,22 @@ exports.getUser = async (req, res) => {
 
 exports.getLocationWiseUser = async (req, res) => {
   try {
-    const { radius, latitude, longitude, mono, limit, pageNo, ageMin, ageMax, gender } = req.query;
+    const {
+      radius,
+      latitude,
+      longitude,
+      mono,
+      limit,
+      pageNo,
+      ageMin,
+      ageMax,
+      gender, 
+    } = req.query;
 
-    if (!radius || !latitude || !longitude || !mono) {
-      return res.status(400).json({ status: false, message: "Required parameters missing." });
+    if (!radius || !latitude || !longitude) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Required parameters missing." });
     }
 
     const lat = parseFloat(latitude);
@@ -254,13 +266,13 @@ exports.getLocationWiseUser = async (req, res) => {
 
     const allUsers = await User.find();
 
-    const allMobileNumbers = allUsers.map(user => user.mono);
+    const allMobileNumbers = allUsers.map((user) => user.mono);
 
     const places = await Place.find({ mono: { $in: allMobileNumbers } });
 
-    const placeNames = [...new Set(places.map(place => place.placeName))];
+    const placeNames = [...new Set(places.map((place) => place.placeName))];
 
-    const nearbyUsers = allUsers.filter(user => {
+    const nearbyUsers = allUsers.filter((user) => {
       const userLat = parseFloat(user.lattitude);
       const userLon = parseFloat(user.longtitude);
       const distance = geolib.getDistance(
@@ -272,11 +284,13 @@ exports.getLocationWiseUser = async (req, res) => {
 
     let filteredUsers = nearbyUsers;
     if (ageMin && ageMax) {
-      filteredUsers = filteredUsers.filter(user => user.age >= ageMin && user.age <= ageMax);
+      filteredUsers = filteredUsers.filter(
+        (user) => user.age >= ageMin && user.age <= ageMax
+      );
     }
 
     if (gender) {
-      filteredUsers = filteredUsers.filter(user => user.gender === gender);
+      filteredUsers = filteredUsers.filter((user) => user.gender === gender);
     }
 
     let paginatedUsers;
@@ -289,17 +303,36 @@ exports.getLocationWiseUser = async (req, res) => {
       paginatedUsers = filteredUsers.slice(startIdx, endIdx);
     }
 
-    paginatedUsers.forEach(user => {
+    let currentUserId;
+    if (mono) {
+      const currentUser = await User.findOne({ mono });
+      currentUserId = currentUser ? currentUser._id : null;
+    } else {
+      currentUserId = null;
+    }
+
+    if (currentUserId) {
+      paginatedUsers = paginatedUsers.filter(
+        (user) => String(user._id) !== String(currentUserId)
+      );
+    }
+
+    paginatedUsers.forEach((user) => {
       user.lastVisitedPlace = placeNames;
     });
 
-    res.status(200).json({
+    const response = {
       status: true,
       message: "Success.",
-      totalUser: allUsers.length - 1,
+      totalUser: paginatedUsers.length - 1,
+      currentUserId: currentUserId,
       user: paginatedUsers,
-    });
+    };
+ 
+    res.status(200).json(response);
   } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
-  }
+    return res
+      .status(500)
+      .json({ status: false, error: error.message || "Server Error" });
+  } 
 };
