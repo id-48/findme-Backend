@@ -1,5 +1,6 @@
 const Connection = require("./connection.model");
 const User = require("../user/user.model");
+const { sendNotification  } = require('../../util/notificationManager');
 
 exports.sendFriendRequest = async (req, res) => {
     var {
@@ -82,9 +83,10 @@ exports.makeFriend = async (req, res) => {
 
     if (status === 'approved') {
       message = 'Friend request approved.';
-
+      sendNotification(reciverId, message);
     } else if (status === 'rejected') {
       message = 'Friend request rejected.';
+      sendNotification(reciverId, message);
       await Connection.deleteOne({ senderId, reciverId });
     } else {
       return res.status(400).json({ status: false, message: 'Invalid status.' });
@@ -96,6 +98,7 @@ exports.makeFriend = async (req, res) => {
     return res.status(500).json({ status: false, error: error.message || 'Server Error' });
   }
 };
+
 
 exports.friendList = async (req, res) => {
   const { userId } = req.query;

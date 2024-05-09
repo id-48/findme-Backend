@@ -12,6 +12,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "fcm-node": "^1.6.1",
     "geolib": "^3.3.4",
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
