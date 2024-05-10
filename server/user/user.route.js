@@ -23,4 +23,6 @@ router.get("/deleteUser", verifyToken , UserController.deleteUser);
 
 router.post("/checkUser", UserController.userCheck);
 
+router.post("/sendUserActivity", verifyToken , UserController.sendUserActivity);
+
 module.exports = router;

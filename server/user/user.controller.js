@@ -336,3 +336,33 @@ exports.getLocationWiseUser = async (req, res) => {
       .json({ status: false, error: error.message || "Server Error" });
   } 
 };
+
+
+exports.sendUserActivity = async (req, res) => {
+  try {
+    const { userId, lastActivate, userStatus } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ status: false, message: "userId is required" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    user.lastActivate = lastActivate;
+    user.userStatus = userStatus;
+
+    await user.save();
+
+    res.status(200).json({
+      status: true,
+      message: "User activity updated successfully",
+      user: user,
+    });
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+  }
+};
