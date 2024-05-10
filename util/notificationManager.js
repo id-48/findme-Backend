@@ -4,7 +4,7 @@ const config = require("../config")
 const serverKey = config.FCM_SERVER_KEY;
 const fcm = new FCM(serverKey);
 
-const sendNotification = async (senderId, message) => {
+const sendNotification = async (senderId, message, slug) => {
    const receiverFCMToken = await getUserDeviceToken(senderId);
 
    if (!receiverFCMToken) {
@@ -18,6 +18,9 @@ const sendNotification = async (senderId, message) => {
       title: 'Findme',
       body: message,
     },
+    data:{
+      slug: slug
+    }
   };
 
   fcm.send(messageObject, (err, response) => {

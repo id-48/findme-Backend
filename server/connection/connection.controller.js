@@ -9,7 +9,9 @@ exports.sendFriendRequest = async (req, res) => {
       status,
     } = req.body;
     try {
+      var slug;
       var existingConnection = await Connection.findOne({reciverId: reciverId, senderId: senderId});
+      const senderUserName = await User.findById(senderId);
 
       if (existingConnection) {
         return res
@@ -26,9 +28,10 @@ exports.sendFriendRequest = async (req, res) => {
       var connectionSaved = await newConnection.save();
 
       if (connectionSaved) {
-        return res
-          .status(200)
-          .json({ status: true, message: "Send connection request." });
+        slug = "Invitation";
+        sendNotification(reciverId, senderUserName.name + " sented friend request.", slug);
+        return res.status(200).json({ status: true, message: "Send connection request." });
+          
       } else {
         return res.status(200).json({ status: false, message: "Failed." });
       }
@@ -71,6 +74,7 @@ exports.makeFriend = async (req, res) => {
   try {
     let message = '';
     let updatedConnection;
+    let slug;
 
     const connection = await Connection.findOne({ senderId, reciverId});
     const userName = await User.findById(reciverId);
@@ -89,10 +93,12 @@ exports.makeFriend = async (req, res) => {
 
     if (status === 'approved') {
       message = "Congratulations " + userName.name + " accepted your friend request.";
-      sendNotification(senderId, message);
+      slug = "Friend";
+      sendNotification(senderId, message, slug);
     } else if (status === 'rejected') {
       message = "Congratulations " + userName.name + " rejected your friend request.";
-      sendNotification(senderId, message);
+      slug = "Home";
+      sendNotification(senderId, message, slug);
       await Connection.deleteOne({ senderId, reciverId });
     } else {
       return res.status(400).json({ status: false, message: 'Invalid status.' });
