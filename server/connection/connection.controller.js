@@ -73,20 +73,26 @@ exports.makeFriend = async (req, res) => {
     let updatedConnection;
 
     const connection = await Connection.findOne({ senderId, reciverId});
+    const userName = await User.findById(reciverId);
 
     if (!connection) {
       return res.status(404).json({ status: false, message: 'Friend request not found.' });
+    }
+
+    if (!userName.name) {
+      console.log('User name Not found');
+      return null;
     }
 
     connection.status = status;
     updatedConnection = await connection.save();
 
     if (status === 'approved') {
-      message = 'Friend request approved.';
-      sendNotification(reciverId, message);
+      message = "Congratulations " + userName.name + " accepted your friend request.";
+      sendNotification(senderId, message);
     } else if (status === 'rejected') {
-      message = 'Friend request rejected.';
-      sendNotification(reciverId, message);
+      message = "Congratulations " + userName.name + " rejected your friend request.";
+      sendNotification(senderId, message);
       await Connection.deleteOne({ senderId, reciverId });
     } else {
       return res.status(400).json({ status: false, message: 'Invalid status.' });

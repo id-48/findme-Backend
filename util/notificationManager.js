@@ -4,8 +4,8 @@ const config = require("../config")
 const serverKey = config.FCM_SERVER_KEY;
 const fcm = new FCM(serverKey);
 
-const sendNotification = async (receiverId, message) => {
-   const receiverFCMToken = await getUserDeviceToken(receiverId);
+const sendNotification = async (senderId, message) => {
+   const receiverFCMToken = await getUserDeviceToken(senderId);
 
    if (!receiverFCMToken) {
      console.error('Receiver FCM token not found.');
@@ -15,7 +15,7 @@ const sendNotification = async (receiverId, message) => {
   const messageObject = {
     to: receiverFCMToken,
     notification: {
-      title: 'New Friend Request',
+      title: 'Findme',
       body: message,
     },
   };
@@ -30,9 +30,9 @@ const sendNotification = async (receiverId, message) => {
 };
 
 
-async function getUserDeviceToken(receiverId) {
+async function getUserDeviceToken(senderId) {
   try {
-    const user = await User.findById(receiverId);
+    const user = await User.findById(senderId);
 
     if (!user) {
       console.log('User not found');
@@ -53,6 +53,7 @@ async function getUserDeviceToken(receiverId) {
     throw error;
   }
 }
+
 
 module.exports = {
   sendNotification,
