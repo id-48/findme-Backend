@@ -13,6 +13,7 @@ exports.addUser = async (req, res) => {
     email,
     age,
     mono,
+    countryName,
     countryCode,
     lastVisitedPlace,
     lattitude,
@@ -38,6 +39,7 @@ exports.addUser = async (req, res) => {
       email: email || "",
       age: age || "",
       mono: mono || "",
+      countryName: countryName || "",
       countryCode: countryCode || "",
       lastVisitedPlace: lastVisitedPlace || [],
       lattitude: lattitude || "",
@@ -79,6 +81,7 @@ exports.updateUser = async (req, res) => {
     email,
     age,
     mono,
+    countryName,
     countryCode,
     lastVisitedPlace,
     lattitude,
@@ -99,6 +102,7 @@ exports.updateUser = async (req, res) => {
       existingUser.bio = bio != "" ? bio : existingUser.bio;
       existingUser.mono = mono != "" ? mono : existingUser.mono;
       existingUser.email = email != "" ? email : existingUser.email;
+      existingUser.countryName = countryName != "" ? countryName : existingUser.countryName;
       existingUser.age = age != "" ? age : existingUser.age;
       existingUser.countryCode =
         countryCode != "" ? countryCode : existingUser.countryCode;
@@ -252,7 +256,7 @@ exports.getLocationWiseUser = async (req, res) => {
       pageNo,
       ageMin,
       ageMax,
-      gender, 
+      gender,
     } = req.query;
 
     if (!radius || !latitude || !longitude) {
@@ -321,29 +325,39 @@ exports.getLocationWiseUser = async (req, res) => {
       user.lastVisitedPlace = placeNames;
     });
 
+    console.log("nearbyUsers.length", nearbyUsers.length);
+
     const response = {
       status: true,
       message: "Success.",
-      totalUser: paginatedUsers.length - 1,
+      totalUser: paginatedUsers.length,
       currentUserId: currentUserId,
       user: paginatedUsers,
     };
- 
-    res.status(200).json(response);
+
+    const response1 = {
+      status: true,
+      message: "Success.",
+      currentUserId: currentUserId,
+      user: paginatedUsers,
+    };
+
+    res.status(200).json(!pageNo && !limit ? response1 : response);
   } catch (error) {
     return res
       .status(500)
       .json({ status: false, error: error.message || "Server Error" });
-  } 
+  }
 };
-
 
 exports.sendUserActivity = async (req, res) => {
   try {
     const { userId, lastActivate, userStatus } = req.body;
 
     if (!userId) {
-      return res.status(400).json({ status: false, message: "userId is required" });
+      return res
+        .status(400)
+        .json({ status: false, message: "userId is required" });
     }
 
     const user = await User.findById(userId);
@@ -363,6 +377,8 @@ exports.sendUserActivity = async (req, res) => {
       user: user,
     });
   } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+    return res
+      .status(500)
+      .json({ status: false, error: error.message || "Server Error" });
   }
 };
