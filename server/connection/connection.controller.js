@@ -1,6 +1,6 @@
 const Connection = require("./connection.model");
 const User = require("../user/user.model");
-const { sendNotification  } = require('../../util/notificationManager');
+const { sendNotification, sendEmailNotification } = require('../../util/notificationManager');
 
 exports.sendFriendRequest = async (req, res) => {
     var {
@@ -12,6 +12,10 @@ exports.sendFriendRequest = async (req, res) => {
       var slug;
       var existingConnection = await Connection.findOne({reciverId: reciverId, senderId: senderId});
       const senderUserName = await User.findById(senderId);
+      const reciverEmail = await User.findById(reciverId);
+      console.log("req.body", req.body);
+      console.log("senderUserName", senderUserName.email);
+      console.log("reciverEmail", reciverEmail.email);
 
       if (existingConnection) {
         return res
@@ -30,6 +34,7 @@ exports.sendFriendRequest = async (req, res) => {
       if (connectionSaved) {
         slug = "Invitation";
         sendNotification(reciverId, senderUserName.name + " sent friend request.", slug);
+        sendEmailNotification(reciverEmail.email, "Sent friend request", senderUserName.name + " sent friend request."); 
         return res.status(200).json({ status: true, message: "Send connection request." });
           
       } else {
@@ -78,14 +83,10 @@ exports.makeFriend = async (req, res) => {
 
     const connection = await Connection.findOne({ senderId, reciverId});
     const userName = await User.findById(reciverId);
+    const senderEmail = await User.findById(senderId);
 
     if (!connection) {
       return res.status(404).json({ status: false, message: 'Friend request not found.' });
-    }
-
-    if (!userName.name) {
-      console.log('User name Not found');
-      return null;
     }
 
     connection.status = status;
@@ -95,10 +96,14 @@ exports.makeFriend = async (req, res) => {
       message = "Congratulations " + userName.name + " accepted your friend request.";
       slug = "Friend";
       sendNotification(senderId, message, slug);
+      sendEmailNotification(senderEmail.email, "Your friend request accepted", message); 
+
     } else if (status === 'rejected') {
       message = "Congratulations " + userName.name + " rejected your friend request.";
       slug = "Home";
       sendNotification(senderId, message, slug);
+      sendEmailNotification(senderEmail.email, "Your friend request rejected", message); 
+
       await Connection.deleteOne({ senderId, reciverId });
     } else {
       return res.status(400).json({ status: false, message: 'Invalid status.' });

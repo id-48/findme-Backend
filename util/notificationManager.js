@@ -1,8 +1,19 @@
 const FCM = require('fcm-node');
+const nodemailer = require('nodemailer');
 const User = require('../server/user/user.model');
 const config = require("../config")
+
 const serverKey = config.FCM_SERVER_KEY;
 const fcm = new FCM(serverKey);
+
+const transporter = nodemailer.createTransport({
+  port:465,
+  secure: true,
+  auth: {
+    user: 'cartoonmoza@gmail.com',
+    pass: 'alrl srdy odbx tihg'
+  }
+});
 
 const sendNotification = async (senderId, message, slug) => {
    const receiverFCMToken = await getUserDeviceToken(senderId);
@@ -32,23 +43,32 @@ const sendNotification = async (senderId, message, slug) => {
   });
 };
 
+const sendEmailNotification = async (receiverEmail, subject, message) => {
+  const mailOptions = {
+    from: 'cartoonmoza@gmail.com',
+    to: receiverEmail,
+    subject: subject,
+    text: message
+  };
+
+  transporter.sendMail(mailOptions, function(error, info) {
+    if (error) {
+      console.log('Error sending email notification:', error);
+    } else {
+      console.log('Email notification sent:', info.response);
+    }
+  });
+};
+
 
 async function getUserDeviceToken(senderId) {
   try {
     const user = await User.findById(senderId);
-
-    if (!user) {
-      console.log('User not found');
-      return null;
-    }
-
     if (!user.fcmToken) {
       console.log('FCM token not found for the user');
       return null;
     }
-
-    console.log("collection find fcm",user.fcmToken);
-
+    
     return user.fcmToken;
 
   } catch (error) {
@@ -58,6 +78,9 @@ async function getUserDeviceToken(senderId) {
 }
 
 
+
+
 module.exports = {
   sendNotification,
+  sendEmailNotification
 };
