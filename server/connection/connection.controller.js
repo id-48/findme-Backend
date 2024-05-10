@@ -29,7 +29,7 @@ exports.sendFriendRequest = async (req, res) => {
 
       if (connectionSaved) {
         slug = "Invitation";
-        sendNotification(reciverId, senderUserName.name + " sented friend request.", slug);
+        sendNotification(reciverId, senderUserName.name + " sent friend request.", slug);
         return res.status(200).json({ status: true, message: "Send connection request." });
           
       } else {
