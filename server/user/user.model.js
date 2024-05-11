@@ -14,6 +14,7 @@ const UsersSchema = new mongoose.Schema(
         lattitude: { type: String, default: "" },
         longtitude: { type: String, default: "" },
         lastActivate: { type: String, default: "" },
+        address: { type: String, default: "" },
         userStatus: { type: String, enum: ["online", "offline"], default: "offline" },
         gender: { type: String, default: "" },
         languages: { type: [String], default: [] },

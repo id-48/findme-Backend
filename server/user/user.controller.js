@@ -14,6 +14,7 @@ exports.addUser = async (req, res) => {
     age,
     mono,
     countryName,
+    address,
     countryCode,
     lastVisitedPlace,
     lattitude,
@@ -40,6 +41,7 @@ exports.addUser = async (req, res) => {
       age: age || "",
       mono: mono || "",
       countryName: countryName || "",
+      address: address || "",
       countryCode: countryCode || "",
       lastVisitedPlace: lastVisitedPlace || [],
       lattitude: lattitude || "",
@@ -82,6 +84,7 @@ exports.updateUser = async (req, res) => {
     age,
     mono,
     countryName,
+    address,
     countryCode,
     lastVisitedPlace,
     lattitude,
@@ -103,6 +106,7 @@ exports.updateUser = async (req, res) => {
       existingUser.mono = mono != "" ? mono : existingUser.mono;
       existingUser.email = email != "" ? email : existingUser.email;
       existingUser.countryName = countryName != "" ? countryName : existingUser.countryName;
+      existingUser.address = address != "" ? address : existingUser.address;
       existingUser.age = age != "" ? age : existingUser.age;
       existingUser.countryCode =
         countryCode != "" ? countryCode : existingUser.countryCode;
