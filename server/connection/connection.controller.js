@@ -27,7 +27,7 @@ exports.sendFriendRequest = async (req, res) => {
       sendNotification(reciverId, senderUserName.name + " sent friend request.", slug);
       sendEmailNotification(reciverEmail.email, "Sent friend request", senderUserName.name + " sent friend request.");
 
-      return res.status(200).json({ status: true, message: "Send connection request."});
+      return res.status(200).json({ status: true, message: "Send connection request." });
     } else {
       return res.status(200).json({ status: false, message: "Failed." });
     }
