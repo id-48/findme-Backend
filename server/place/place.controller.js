@@ -1,4 +1,5 @@
 const Place = require("./place.model");
+const User = require("../user/user.model");
 
 exports.addPlace = async (req, res) => {
   var {
@@ -27,6 +28,9 @@ exports.addPlace = async (req, res) => {
     var placeSaved = await newPlace.save();
 
     if (placeSaved) {
+      // Update the user's lastVisitedPlace field
+      await User.updateOne({ mono: mono }, { $addToSet: { lastVisitedPlace: placeName } });
+
       return res.status(200).json({ status: true, message: "Place registered."});
     } else {
       return res.status(200).json({ status: false, message: "Failed." });
@@ -35,6 +39,7 @@ exports.addPlace = async (req, res) => {
     return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
 };
+
 
 exports.updatePlace = async (req, res) => {
   var {

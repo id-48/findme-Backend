@@ -275,12 +275,6 @@ exports.getLocationWiseUser = async (req, res) => {
 
     const allUsers = await User.find();
 
-    const allMobileNumbers = allUsers.map((user) => user.mono);
-
-    const places = await Place.find({ mono: { $in: allMobileNumbers } });
-
-    const placeNames = [...new Set(places.map((place) => place.placeName))];
-
     const nearbyUsers = allUsers.filter((user) => {
       const userLat = parseFloat(user.lattitude);
       const userLon = parseFloat(user.longtitude);
@@ -340,10 +334,6 @@ exports.getLocationWiseUser = async (req, res) => {
       (user) => !connectedUserIds.includes(String(user._id))
     );
 
-    paginatedUsers.forEach((user) => {
-      user.lastVisitedPlace = placeNames;
-    });
-
     const pendingRequests = await Connection.find({
       reciverId: currentUserId,
       status: 'pending',
@@ -354,7 +344,7 @@ exports.getLocationWiseUser = async (req, res) => {
     const senders = await User.find({ _id: { $in: senderIds } });
 
     const sendingRequestIds = senders.map((sender) => sender._id);
-
+    
     const response = {
       status: true,
       message: "Success.",
