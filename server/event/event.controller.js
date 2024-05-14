@@ -12,12 +12,6 @@ exports.addEvent = async (req, res) => {
     mono,
   } = req.body;
   try {
-    var existingEvent = await Event.findOne({title});
-
-    if (existingEvent) {
-      return res.status(200).json({ status: false, message: "Event already exists." });
-    }
-
     var newEvent = new Event({
       title: title || "",
       location: location || "",

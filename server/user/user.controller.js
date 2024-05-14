@@ -1,6 +1,7 @@
 const User = require("./user.model");
 const Place = require("../place/place.model");
 const fs = require("fs");
+const Connection = require("../connection/connection.model");
 const jwt = require("jsonwebtoken");
 const config = require("../../config");
 const geolib = require("geolib");
@@ -325,11 +326,34 @@ exports.getLocationWiseUser = async (req, res) => {
       );
     }
 
+    const approvedConnections = await Connection.find({
+      status: 'approved',
+      $or: [{ senderId: currentUserId }, { reciverId: currentUserId }],
+    });
+
+    const connectedUserIds = approvedConnections.flatMap((connection) => [
+      connection.senderId,
+      connection.reciverId,
+    ]);
+
+    paginatedUsers = paginatedUsers.filter(
+      (user) => !connectedUserIds.includes(String(user._id))
+    );
+
     paginatedUsers.forEach((user) => {
       user.lastVisitedPlace = placeNames;
     });
 
-    console.log("nearbyUsers.length", nearbyUsers.length);
+    const pendingRequests = await Connection.find({
+      reciverId: currentUserId,
+      status: 'pending',
+    });
+
+    const senderIds = pendingRequests.map((request) => request.senderId);
+
+    const senders = await User.find({ _id: { $in: senderIds } });
+
+    const sendingRequestIds = senders.map((sender) => sender._id);
 
     const response = {
       status: true,
@@ -337,6 +361,7 @@ exports.getLocationWiseUser = async (req, res) => {
       totalUser: paginatedUsers.length,
       currentUserId: currentUserId,
       user: paginatedUsers,
+      sendingRequest: sendingRequestIds,
     };
 
     const response1 = {
@@ -344,6 +369,7 @@ exports.getLocationWiseUser = async (req, res) => {
       message: "Success.",
       currentUserId: currentUserId,
       user: paginatedUsers,
+      sendingRequest: [],
     };
 
     res.status(200).json(!pageNo && !limit ? response1 : response);
@@ -353,6 +379,7 @@ exports.getLocationWiseUser = async (req, res) => {
       .json({ status: false, error: error.message || "Server Error" });
   }
 };
+
 
 exports.sendUserActivity = async (req, res) => {
   try {
