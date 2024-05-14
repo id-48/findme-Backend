@@ -262,6 +262,7 @@ exports.getLocationWiseUser = async (req, res) => {
       ageMin,
       ageMax,
       gender,
+      reciverId 
     } = req.query;
 
     if (!radius || !latitude || !longitude) {
@@ -319,7 +320,11 @@ exports.getLocationWiseUser = async (req, res) => {
         (user) => String(user._id) !== String(currentUserId)
       );
     }
-
+    // Remove receiverId from paginatedUsers if it exists
+    if (reciverId) {
+      paginatedUsers = paginatedUsers.filter((user) => String(user._id) !== String(reciverId));
+    }
+    
     const approvedConnections = await Connection.find({
       status: 'approved',
       $or: [{ senderId: currentUserId }, { reciverId: currentUserId }],

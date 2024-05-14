@@ -3,49 +3,38 @@ const User = require("../user/user.model");
 const { sendNotification, sendEmailNotification } = require('../../util/notificationManager');
 
 exports.sendFriendRequest = async (req, res) => {
-    var {
-      senderId,
-      reciverId,
-      status,
-    } = req.body;
-    try {
-      var slug;
-      var existingConnection = await Connection.findOne({reciverId: reciverId, senderId: senderId});
-      const senderUserName = await User.findById(senderId);
-      const reciverEmail = await User.findById(reciverId);
-      console.log("req.body", req.body);
-      console.log("senderUserName", senderUserName.email);
-      console.log("reciverEmail", reciverEmail.email);
+  var { senderId, reciverId, status } = req.body;
+  try {
+    var slug;
+    var existingConnection = await Connection.findOne({ reciverId: reciverId, senderId: senderId });
+    const senderUserName = await User.findById(senderId);
+    const reciverEmail = await User.findById(reciverId);
 
-      if (existingConnection) {
-        return res
-          .status(200)
-          .json({ status: false, message: "Already sended connection request." });
-      }
-
-      var newConnection = new Connection({
-        senderId: senderId || "",
-        reciverId: reciverId || "",
-        status: status || "",
-      });
-
-      var connectionSaved = await newConnection.save();
-
-      if (connectionSaved) {
-        slug = "Invitation";
-        sendNotification(reciverId, senderUserName.name + " sent friend request.", slug);
-        sendEmailNotification(reciverEmail.email, "Sent friend request", senderUserName.name + " sent friend request."); 
-        return res.status(200).json({ status: true, message: "Send connection request." });
-          
-      } else {
-        return res.status(200).json({ status: false, message: "Failed." });
-      }
-      
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ status: false, error: error.message || "Server Error" });
+    if (existingConnection) {
+      return res.status(200).json({ status: false, message: "Already sent connection request." });
     }
+
+    var newConnection = new Connection({
+      senderId: senderId || "",
+      reciverId: reciverId || "",
+      status: status || "",
+    });
+
+    var connectionSaved = await newConnection.save();
+
+    if (connectionSaved) {
+      slug = "Invitation";
+      sendNotification(reciverId, senderUserName.name + " sent friend request.", slug);
+      sendEmailNotification(reciverEmail.email, "Sent friend request", senderUserName.name + " sent friend request.");
+
+      return res.status(200).json({ status: true, message: "Send connection request."});
+    } else {
+      return res.status(200).json({ status: false, message: "Failed." });
+    }
+
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+  }
 };
 
 exports.receiveFriendRequest = async (req, res) => {
@@ -115,7 +104,6 @@ exports.makeFriend = async (req, res) => {
     return res.status(500).json({ status: false, error: error.message || 'Server Error' });
   }
 };
-
 
 exports.friendList = async (req, res) => {
   const { userId } = req.query;
