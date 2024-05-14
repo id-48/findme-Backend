@@ -122,50 +122,7 @@ io.on("connect", async (socket) => {
 
         io.in(chatRoom).emit("chat", chat);
 
-        // //notification related
-        // if (receiverId && !receiverId.isBlock) {
-        //   const payload = {
-        //     to: receiverId.fcm_token,
-        //     notification: {
-        //       body: chat.message,
-        //       title: senderId.name,
-        //     },
-        //     data:
-        //       type === "user"
-        //         ? {
-        //             topic: chatTopic._id,
-        //             message: chat.message,
-        //             date: chat.date,
-        //             chatDate: chat.date,
-        //             _id: senderId._id,
-        //             name: senderId.name,
-        //             username: senderId.username,
-        //             image: senderId.image,
-        //             country: senderId.country,
-        //             time: "Just Now",
-        //             type: "MESSAGE",
-        //           }
-        //         : {
-        //             topic: chatTopic._id,
-        //             message: chat.message,
-        //             date: chat.date,
-        //             chatDate: chat.date,
-        //             _id: senderId._id,
-        //             name: senderId.name,
-        //             image: senderId.image,
-        //             country: senderId.country,
-        //             time: "Just Now",
-        //             type: "MESSAGE",
-        //           },
-        //   };
-        //   await fcm.send(payload, function (err, response) {
-        //     if (err) {
-        //       console.log("Something has gone wrong!!", err);
-        //     } else {
-        //       console.log("Notification sent successfully:", response);
-        //     }
-        //   });
-        // }
+      
       }
     } else {
       console.log("------3.emit chat event------");

@@ -298,7 +298,7 @@ exports.getLocationWiseUser = async (req, res) => {
       );
     }
 
-    if (gender) {
+    if (gender && gender !== "Both") {
       filteredUsers = filteredUsers.filter((user) => user.gender === gender);
     }
 
