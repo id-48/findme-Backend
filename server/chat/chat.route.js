@@ -1,13 +1,36 @@
 const express = require("express");
 const ChatController = require("../chat/chat.controller");
 const verifyToken = require('../../checkAccess'); 
-const router = express.Router();
+const route = express.Router();
 
 
-router.get("/allChats", verifyToken, ChatController.getAllChats);
+//multer
+const multer = require("multer");
+const storage = require("../../util/multer");
+const upload = multer({
+  storage,
+});
 
-router.post("/sendMessage", verifyToken, ChatController.sendMessage);
+//get old chat
+route.get("/getOldChat", verifyToken, ChatController.getOldChat);
 
-router.get("/getMessages", verifyToken, ChatController.getMessages);
+//create chat [with image,video,audio]
+route.post(
+  "/createChat",
+  verifyToken,
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "video", maxCount: 1 },
+    { name: "audio", maxCount: 1 },
+  ]),
+  ChatController.store
+);
 
-module.exports = router;
+//delete Chat
+route.delete(
+  "/deleteChat",
+  verifyToken,
+  ChatController.deleteChat
+);
+
+module.exports = route;
