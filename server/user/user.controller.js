@@ -261,8 +261,7 @@ exports.getLocationWiseUser = async (req, res) => {
       pageNo,
       ageMin,
       ageMax,
-      gender,
-      reciverId 
+      gender
     } = req.query;
 
     if (!radius || !latitude || !longitude) {
@@ -320,24 +319,13 @@ exports.getLocationWiseUser = async (req, res) => {
         (user) => String(user._id) !== String(currentUserId)
       );
     }
-    // Remove receiverId from paginatedUsers if it exists
-    if (reciverId) {
-      paginatedUsers = paginatedUsers.filter((user) => String(user._id) !== String(reciverId));
-    }
-    
+     
     const approvedConnections = await Connection.find({
       status: 'approved',
       $or: [{ senderId: currentUserId }, { reciverId: currentUserId }],
     });
 
-    const connectedUserIds = approvedConnections.flatMap((connection) => [
-      connection.senderId,
-      connection.reciverId,
-    ]);
-
-    paginatedUsers = paginatedUsers.filter(
-      (user) => !connectedUserIds.includes(String(user._id))
-    );
+    ///Giving SenderId List of Data
 
     const pendingRequests = await Connection.find({
       reciverId: currentUserId,
@@ -350,6 +338,35 @@ exports.getLocationWiseUser = async (req, res) => {
 
     const sendingRequestIds = senders.map((sender) => sender._id);
     
+
+    ///Sending Request After Removeing Data
+    const sendercurrentRequests = await Connection.find({
+      senderId: currentUserId,
+      status: 'pending',
+    });
+
+    const reciverIds = sendercurrentRequests.map((request) => request.reciverId);
+
+    const recivers = await User.find({ _id: { $in: reciverIds } });
+
+     const reciversRequestIds = recivers.map((reciver) =>
+      reciver._id.toString().replace(/ObjectId\('|'\)/g, '')
+    );
+    
+    paginatedUsers = paginatedUsers.filter(
+      (user) => !reciversRequestIds.includes(String(user._id))
+    );
+
+    ///Make Friend After Removeing Data
+    const connectedUserIds = approvedConnections.flatMap((connection) => [
+      connection.senderId,
+      connection.reciverId,
+    ]);
+
+    paginatedUsers = paginatedUsers.filter(
+      (user) => !connectedUserIds.includes(String(user._id))
+    );
+
     const response = {
       status: true,
       message: "Success.",

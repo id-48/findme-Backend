@@ -88,7 +88,7 @@ exports.makeFriend = async (req, res) => {
       sendEmailNotification(senderEmail.email, "Your friend request accepted", message); 
 
     } else if (status === 'rejected') {
-      message = "Congratulations " + userName.name + " rejected your friend request.";
+      message = userName.name + " rejected your friend request.";
       slug = "Home";
       sendNotification(senderId, message, slug);
       sendEmailNotification(senderEmail.email, "Your friend request rejected", message); 
