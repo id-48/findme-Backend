@@ -25,4 +25,6 @@ router.post("/checkUser", UserController.userCheck);
 
 router.post("/sendUserActivity", verifyToken , UserController.sendUserActivity);
 
+router.get("/getPeopleMayKnow", verifyToken , UserController.getPeopleMayKnow );
+
 module.exports = router;

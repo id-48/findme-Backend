@@ -24,6 +24,10 @@ app.use("/storage", express.static(path.join(__dirname, "storage")));
 //Parser
 app.use(bodyParser.json());
 
+// Admin route
+const Admin = require("./server/admin/admin.route");
+app.use("/admin", Admin);
+
 // User route
 const User = require("./server/user/user.route");
 app.use("/users", User);

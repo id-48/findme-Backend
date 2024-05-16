@@ -1,8 +1,7 @@
 const User = require("./user.model");
-const Place = require("../place/place.model");
-const fs = require("fs");
 const Connection = require("../connection/connection.model");
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
 const config = require("../../config");
 const geolib = require("geolib");
 
@@ -392,7 +391,6 @@ exports.getLocationWiseUser = async (req, res) => {
   }
 };
 
-
 exports.sendUserActivity = async (req, res) => {
   try {
     const { userId, lastActivate, userStatus } = req.body;
@@ -424,4 +422,67 @@ exports.sendUserActivity = async (req, res) => {
       .status(500)
       .json({ status: false, error: error.message || "Server Error" });
   }
+};
+
+exports.getPeopleMayKnow = async (req, res) => {
+  const { userId } = req.query;
+
+  try {
+    const { suggestedUsers, totalSuggestedUsers } = await getMutualConnections(userId);
+
+    if (suggestedUsers.length > 0) {
+      res.status(200).json({
+        status: true,
+        message: "People you may know.",
+        totalSuggestedUsers: totalSuggestedUsers,
+        suggestedUsers: suggestedUsers,
+      });
+    } else {
+      res.status(200).json({
+        status: true,
+        message: "No suggestions available.",
+        totalSuggestedUsers: totalSuggestedUsers,
+        suggestedUsers: [],
+      });
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ status: false, error: error.message || "Server Error" });
+  }
+};
+
+const getMutualConnections = async (userId) => {
+  // Fetch the user's friends
+  const connections = await Connection.find({
+    $or: [{ senderId: userId }, { reciverId: userId }],
+    status: 'approved'
+  });
+
+  const friendIds = connections.map(connection => {
+    return connection.senderId === userId ? connection.reciverId : connection.senderId;
+  });
+
+  // Fetch friends of friends
+  const friendsOfFriendsConnections = await Connection.find({
+    $or: [{ senderId: { $in: friendIds } }, { reciverId: { $in: friendIds } }],
+    status: 'approved'
+  });
+
+  const friendsOfFriendsIds = friendsOfFriendsConnections.map(connection => {
+    return connection.senderId === userId || friendIds.includes(connection.senderId) ? connection.reciverId : connection.senderId;
+  });
+
+  // Exclude the user's friends and the user itself
+  const excludeIds = friendIds.concat(userId);
+
+  // Find users who are friends of friends but not in the user's friend list
+  const suggestedUsers = await User.find({
+    _id: { $in: friendsOfFriendsIds, $nin: excludeIds }
+  }).sort({ lastActivate: -1 }); // Suggest based on recent activity
+
+  // Total count of suggested users
+  const totalSuggestedUsers = suggestedUsers.length;
+
+  return { suggestedUsers, totalSuggestedUsers };
 };
