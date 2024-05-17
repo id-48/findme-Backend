@@ -29,4 +29,6 @@ router.get("/getPeopleMayKnow", verifyToken , UserController.getPeopleMayKnow );
 
 router.get("/searchUser", verifyToken , UserController.searchUser );
 
+router.get("/filterUser", verifyToken , UserController.filterUser );
+
 module.exports = router;

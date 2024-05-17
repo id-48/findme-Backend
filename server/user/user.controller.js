@@ -551,3 +551,54 @@ exports.searchUser = async (req, res) => {
   }
 };
 
+exports.filterUser = async (req, res) => {
+  try {
+    var { address, gender, startDate, endDate, limit, pageNo } = req.query;
+
+    if (startDate && !endDate) {
+      endDate = startDate;
+    }
+
+    const userFilter = {};
+    if (address) {
+      userFilter.address = address;
+    }
+    if (gender) {
+      userFilter.gender = gender;
+    }
+
+    let eventMonos = [];
+    if (startDate) {
+      let eventQuery = {
+        eventDate: {
+          $gte: startDate,
+          $lte: endDate
+        }
+      };
+
+      const events = await Event.find(eventQuery);
+      eventMonos = events.map(event => event.mono);
+    }
+
+    if (eventMonos.length > 0) {
+      userFilter.mono = { $in: eventMonos };
+    }
+
+    const filteredUsers = await User.find(userFilter)
+      .limit(parseInt(limit))
+      .skip((parseInt(pageNo) - 1) * parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    const totalFilteredUsers = await User.countDocuments(userFilter);
+
+    res.status(200).json({
+      status: true,
+      message: filteredUsers.length > 0 ? "Success." : "No users found with given filters.",
+      totalUser: totalFilteredUsers,
+      users: filteredUsers,
+    });
+
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+  }
+};
