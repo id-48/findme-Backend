@@ -1,7 +1,7 @@
 const User = require("./user.model");
 const Connection = require("../connection/connection.model");
-const Event = require('../event/event.model');
-const Place = require('../place/place.model');
+const Event = require("../event/event.model");
+const Place = require("../place/place.model");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const config = require("../../config");
@@ -107,7 +107,8 @@ exports.updateUser = async (req, res) => {
       existingUser.bio = bio != "" ? bio : existingUser.bio;
       existingUser.mono = mono != "" ? mono : existingUser.mono;
       existingUser.email = email != "" ? email : existingUser.email;
-      existingUser.countryName = countryName != "" ? countryName : existingUser.countryName;
+      existingUser.countryName =
+        countryName != "" ? countryName : existingUser.countryName;
       existingUser.address = address != "" ? address : existingUser.address;
       existingUser.age = age != "" ? age : existingUser.age;
       existingUser.countryCode =
@@ -262,7 +263,7 @@ exports.getLocationWiseUser = async (req, res) => {
       pageNo,
       ageMin,
       ageMax,
-      gender
+      gender,
     } = req.query;
 
     if (!radius || !latitude || !longitude) {
@@ -320,9 +321,9 @@ exports.getLocationWiseUser = async (req, res) => {
         (user) => String(user._id) !== String(currentUserId)
       );
     }
-     
+
     const approvedConnections = await Connection.find({
-      status: 'approved',
+      status: "approved",
       $or: [{ senderId: currentUserId }, { reciverId: currentUserId }],
     });
 
@@ -330,7 +331,7 @@ exports.getLocationWiseUser = async (req, res) => {
 
     const pendingRequests = await Connection.find({
       reciverId: currentUserId,
-      status: 'pending',
+      status: "pending",
     });
 
     const senderIds = pendingRequests.map((request) => request.senderId);
@@ -338,22 +339,23 @@ exports.getLocationWiseUser = async (req, res) => {
     const senders = await User.find({ _id: { $in: senderIds } });
 
     const sendingRequestIds = senders.map((sender) => sender._id);
-    
 
     ///Sending Request After Removeing Data
     const sendercurrentRequests = await Connection.find({
       senderId: currentUserId,
-      status: 'pending',
+      status: "pending",
     });
 
-    const reciverIds = sendercurrentRequests.map((request) => request.reciverId);
+    const reciverIds = sendercurrentRequests.map(
+      (request) => request.reciverId
+    );
 
     const recivers = await User.find({ _id: { $in: reciverIds } });
 
-     const reciversRequestIds = recivers.map((reciver) =>
-      reciver._id.toString().replace(/ObjectId\('|'\)/g, '')
+    const reciversRequestIds = recivers.map((reciver) =>
+      reciver._id.toString().replace(/ObjectId\('|'\)/g, "")
     );
-    
+
     paginatedUsers = paginatedUsers.filter(
       (user) => !reciversRequestIds.includes(String(user._id))
     );
@@ -427,23 +429,31 @@ exports.sendUserActivity = async (req, res) => {
 };
 
 exports.getPeopleMayKnow = async (req, res) => {
-  const { userId } = req.query;
+  const { userId, radius, latitude, longitude } = req.query;
 
   try {
     const { suggestedUsers, totalSuggestedUsers } = await getMutualConnections(userId);
+
+    let nearbyUsers = [];
+    if (latitude && longitude && radius) {
+      nearbyUsers = await locationWiseUserData(latitude, longitude, radius);
+    }
+
+    const finalData = [...new Set([...suggestedUsers, ...nearbyUsers])];
+
 
     if (suggestedUsers.length > 0) {
       res.status(200).json({
         status: true,
         message: "People you may know.",
-        totalSuggestedUsers: totalSuggestedUsers,
-        suggestedUsers: suggestedUsers,
+        totalSuggestedUsers: finalData.length,
+        suggestedUsers: finalData,
       });
     } else {
       res.status(200).json({
         status: true,
         message: "No suggestions available.",
-        totalSuggestedUsers: totalSuggestedUsers,
+        totalSuggestedUsers: finalData.length,
         suggestedUsers: [],
       });
     }
@@ -458,21 +468,26 @@ const getMutualConnections = async (userId) => {
   // Fetch the user's friends
   const connections = await Connection.find({
     $or: [{ senderId: userId }, { reciverId: userId }],
-    status: 'approved'
+    status: "approved",
   });
 
-  const friendIds = connections.map(connection => {
-    return connection.senderId === userId ? connection.reciverId : connection.senderId;
+  const friendIds = connections.map((connection) => {
+    return connection.senderId === userId
+      ? connection.reciverId
+      : connection.senderId;
   });
 
   // Fetch friends of friends
   const friendsOfFriendsConnections = await Connection.find({
     $or: [{ senderId: { $in: friendIds } }, { reciverId: { $in: friendIds } }],
-    status: 'approved'
+    status: "approved",
   });
 
-  const friendsOfFriendsIds = friendsOfFriendsConnections.map(connection => {
-    return connection.senderId === userId || friendIds.includes(connection.senderId) ? connection.reciverId : connection.senderId;
+  const friendsOfFriendsIds = friendsOfFriendsConnections.map((connection) => {
+    return connection.senderId === userId ||
+      friendIds.includes(connection.senderId)
+      ? connection.reciverId
+      : connection.senderId;
   });
 
   // Exclude the user's friends and the user itself
@@ -480,7 +495,7 @@ const getMutualConnections = async (userId) => {
 
   // Find users who are friends of friends but not in the user's friend list
   const suggestedUsers = await User.find({
-    _id: { $in: friendsOfFriendsIds, $nin: excludeIds }
+    _id: { $in: friendsOfFriendsIds, $nin: excludeIds },
   }).sort({ lastActivate: -1 }); // Suggest based on recent activity
 
   // Total count of suggested users
@@ -489,65 +504,98 @@ const getMutualConnections = async (userId) => {
   return { suggestedUsers, totalSuggestedUsers };
 };
 
+const locationWiseUserData = async (latitude, longitude, radius) => {
+  const lat = parseFloat(latitude);
+  const lon = parseFloat(longitude);
+
+  const allUsers = await User.find();
+
+  const nearbyUsers = allUsers.filter((user) => {
+    if (user.lattitude && user.longtitude) {
+      const userLat = parseFloat(user.lattitude);
+      const userLon = parseFloat(user.longtitude);
+      const distance = geolib.getDistance(
+        { latitude: lat, longitude: lon },
+        { latitude: userLat, longitude: userLon }
+      );
+      return distance <= radius * 1000; // radius in kilometers
+    }
+    return false;
+  });
+
+  return nearbyUsers;
+};
+
 exports.searchUser = async (req, res) => {
   try {
     const searchQuery = req.query.search;
     if (!searchQuery) {
       return res.status(400).json({
         status: false,
-        message: 'Search query is required.',
+        message: "Search query is required.",
       });
     }
 
     // Define the search criteria
     const eventCriteria = {
       $or: [
-        { title: { $regex: searchQuery, $options: 'i' } },
-        { description: { $regex: searchQuery, $options: 'i' } }
-      ]
+        { title: { $regex: searchQuery, $options: "i" } },
+        { description: { $regex: searchQuery, $options: "i" } },
+      ],
     };
 
     const placeCriteria = {
       $or: [
-        { placeName: { $regex: searchQuery, $options: 'i' } },
-        { location: { $regex: searchQuery, $options: 'i' } },
-        { placeDescription: { $regex: searchQuery, $options: 'i' } }
-      ]
+        { placeName: { $regex: searchQuery, $options: "i" } },
+        { location: { $regex: searchQuery, $options: "i" } },
+        { placeDescription: { $regex: searchQuery, $options: "i" } },
+      ],
     };
 
     const userCriteria = {
       $or: [
-        { name: { $regex: searchQuery, $options: 'i' } },
-        { bio: { $regex: searchQuery, $options: 'i' } },
-        { countryName: { $regex: searchQuery, $options: 'i' } },
-        { address: { $regex: searchQuery, $options: 'i' } }
-      ]
+        { name: { $regex: searchQuery, $options: "i" } },
+        { bio: { $regex: searchQuery, $options: "i" } },
+        { countryName: { $regex: searchQuery, $options: "i" } },
+        { address: { $regex: searchQuery, $options: "i" } },
+      ],
     };
 
     const [events, places, usersFromSearch] = await Promise.all([
-      Event.find(eventCriteria).select('mono'),
-      Place.find(placeCriteria).select('mono'),
-      User.find(userCriteria)
+      Event.find(eventCriteria).select("mono"),
+      Place.find(placeCriteria).select("mono"),
+      User.find(userCriteria),
     ]);
 
     // Extract unique mobile numbers from events and places
     const monoNumbers = new Set();
-    events.forEach(event => monoNumbers.add(event.mono));
-    places.forEach(place => monoNumbers.add(place.mono));
+    events.forEach((event) => monoNumbers.add(event.mono));
+    places.forEach((place) => monoNumbers.add(place.mono));
 
     // Find users with the extracted mobile numbers
-    const usersFromMono = await User.find({ mono: { $in: Array.from(monoNumbers) } });
+    const usersFromMono = await User.find({
+      mono: { $in: Array.from(monoNumbers) },
+    });
 
     // Combine unique users
-    const uniqueUsers = [...new Map([...usersFromSearch, ...usersFromMono].map(user => [user._id.toString(), user])).values()];
+    const uniqueUsers = [
+      ...new Map(
+        [...usersFromSearch, ...usersFromMono].map((user) => [
+          user._id.toString(),
+          user,
+        ])
+      ).values(),
+    ];
 
     res.status(200).json({
       status: true,
       message: "Success.",
-      users: uniqueUsers
+      users: uniqueUsers,
     });
   } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+    return res
+      .status(500)
+      .json({ status: false, error: error.message || "Server Error" });
   }
 };
 
@@ -572,12 +620,12 @@ exports.filterUser = async (req, res) => {
       let eventQuery = {
         eventDate: {
           $gte: startDate,
-          $lte: endDate
-        }
+          $lte: endDate,
+        },
       };
 
       const events = await Event.find(eventQuery);
-      eventMonos = events.map(event => event.mono);
+      eventMonos = events.map((event) => event.mono);
     }
 
     if (eventMonos.length > 0) {
@@ -593,12 +641,16 @@ exports.filterUser = async (req, res) => {
 
     res.status(200).json({
       status: true,
-      message: filteredUsers.length > 0 ? "Success." : "No users found with given filters.",
+      message:
+        filteredUsers.length > 0
+          ? "Success."
+          : "No users found with given filters.",
       totalUser: totalFilteredUsers,
       users: filteredUsers,
     });
-
   } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+    return res
+      .status(500)
+      .json({ status: false, error: error.message || "Server Error" });
   }
 };
