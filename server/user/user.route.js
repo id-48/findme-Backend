@@ -27,4 +27,6 @@ router.post("/sendUserActivity", verifyToken , UserController.sendUserActivity);
 
 router.get("/getPeopleMayKnow", verifyToken , UserController.getPeopleMayKnow );
 
+router.get("/searchUser", verifyToken , UserController.searchUser );
+
 module.exports = router;

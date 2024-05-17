@@ -9,6 +9,7 @@ const UsersSchema = new mongoose.Schema(
         age: { type: String, default:"" },
         mono: { type: String, default: "" },
         countryCode: { type: String, default: "" },
+        address: { type: String, default: "" },
         countryName: { type: String, default: "" },
         lastVisitedPlace: { type: [String], default: [] },
         lattitude: { type: String, default: "" },

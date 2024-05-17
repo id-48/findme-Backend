@@ -1,5 +1,7 @@
 const User = require("./user.model");
 const Connection = require("../connection/connection.model");
+const Event = require('../event/event.model');
+const Place = require('../place/place.model');
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const config = require("../../config");
@@ -486,3 +488,66 @@ const getMutualConnections = async (userId) => {
 
   return { suggestedUsers, totalSuggestedUsers };
 };
+
+exports.searchUser = async (req, res) => {
+  try {
+    const searchQuery = req.query.search;
+    if (!searchQuery) {
+      return res.status(400).json({
+        status: false,
+        message: 'Search query is required.',
+      });
+    }
+
+    // Define the search criteria
+    const eventCriteria = {
+      $or: [
+        { title: { $regex: searchQuery, $options: 'i' } },
+        { description: { $regex: searchQuery, $options: 'i' } }
+      ]
+    };
+
+    const placeCriteria = {
+      $or: [
+        { placeName: { $regex: searchQuery, $options: 'i' } },
+        { location: { $regex: searchQuery, $options: 'i' } },
+        { placeDescription: { $regex: searchQuery, $options: 'i' } }
+      ]
+    };
+
+    const userCriteria = {
+      $or: [
+        { name: { $regex: searchQuery, $options: 'i' } },
+        { bio: { $regex: searchQuery, $options: 'i' } },
+        { countryName: { $regex: searchQuery, $options: 'i' } },
+        { address: { $regex: searchQuery, $options: 'i' } }
+      ]
+    };
+
+    const [events, places, usersFromSearch] = await Promise.all([
+      Event.find(eventCriteria).select('mono'),
+      Place.find(placeCriteria).select('mono'),
+      User.find(userCriteria)
+    ]);
+
+    // Extract unique mobile numbers from events and places
+    const monoNumbers = new Set();
+    events.forEach(event => monoNumbers.add(event.mono));
+    places.forEach(place => monoNumbers.add(place.mono));
+
+    // Find users with the extracted mobile numbers
+    const usersFromMono = await User.find({ mono: { $in: Array.from(monoNumbers) } });
+
+    // Combine unique users
+    const uniqueUsers = [...new Map([...usersFromSearch, ...usersFromMono].map(user => [user._id.toString(), user])).values()];
+
+    res.status(200).json({
+      status: true,
+      message: "Success.",
+      users: uniqueUsers
+    });
+  } catch (error) {
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+  }
+};
+
