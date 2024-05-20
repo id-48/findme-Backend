@@ -536,7 +536,6 @@ exports.searchUser = async (req, res) => {
       });
     }
 
-    // Define the search criteria
     const eventCriteria = {
       $or: [
         { title: { $regex: searchQuery, $options: "i" } },
@@ -567,17 +566,14 @@ exports.searchUser = async (req, res) => {
       User.find(userCriteria),
     ]);
 
-    // Extract unique mobile numbers from events and places
     const monoNumbers = new Set();
     events.forEach((event) => monoNumbers.add(event.mono));
     places.forEach((place) => monoNumbers.add(place.mono));
 
-    // Find users with the extracted mobile numbers
     const usersFromMono = await User.find({
       mono: { $in: Array.from(monoNumbers) },
     });
 
-    // Combine unique users
     const uniqueUsers = [
       ...new Map(
         [...usersFromSearch, ...usersFromMono].map((user) => [
@@ -587,17 +583,27 @@ exports.searchUser = async (req, res) => {
       ).values(),
     ];
 
+    const limit = parseInt(req.query.limit) || 10;
+    const pageNo = parseInt(req.query.pageNo) || 1;
+    const startIndex = (pageNo - 1) * limit;
+    const endIndex = startIndex + limit;
+
+    const paginatedUsers = uniqueUsers.slice(startIndex, endIndex);
+
     res.status(200).json({
       status: true,
       message: "Success.",
-      users: uniqueUsers,
+      totalUser: uniqueUsers.length,
+      users: paginatedUsers,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ status: false, error: error.message || "Server Error" });
+    return res.status(500).json({
+      status: false,
+      error: error.message || "Server Error",
+    });
   }
 };
+
 
 exports.filterUser = async (req, res) => {
   try {
