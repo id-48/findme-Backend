@@ -16,8 +16,8 @@ exports.getNotification = async (req, res) => {
         notification: notification,
       });
     } else {
-      res.status(200).json({
-        status: true,
+      res.status(400).json({
+        status: false,
         message: "Success.",
         totalUser: notificationLength.length,
         User: [],
