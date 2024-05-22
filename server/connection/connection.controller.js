@@ -36,7 +36,7 @@ exports.sendFriendRequest = async (req, res) => {
       sendNotification(
         reciverId,
         senderUserName.name + " sent friend request.",
-        slug
+        slug  
       );
       sendEmailNotification(
         reciverEmail.email,
@@ -44,7 +44,7 @@ exports.sendFriendRequest = async (req, res) => {
         senderUserName.name + " sent friend request."
       );
 
-      await addNotification(senderUserName.profilePic[0], senderUserName._id, senderUserName.name + " sent friend request.");
+      await addNotification(senderUserName.profilePic[0], reciverEmail._id, senderUserName.name + " sent friend request.");
 
       return res
         .status(200)
