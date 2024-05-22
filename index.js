@@ -44,6 +44,10 @@ app.use("/places", Places);
 const Connection = require("./server/connection/connection.route");
 app.use("/connection", Connection);
 
+// Notification route
+const Notification = require("./server/notification/notification.route");
+app.use("/notification", Notification);
+
 // Chat route
 const Chat = require("./server/chat/chat.route");
 app.use("/chat", Chat);

@@ -1,6 +1,8 @@
 const FCM = require('fcm-node');
 const nodemailer = require('nodemailer');
 const User = require('../server/user/user.model');
+const Notification = require("../server/notification/notification.model");
+
 const config = require("../config")
 
 const serverKey = config.FCM_SERVER_KEY;
@@ -77,10 +79,25 @@ async function getUserDeviceToken(senderId) {
   }
 }
 
+const addNotification = async (profileImage, userId, description) => {
+  try {
+    const newNotification = new Notification({
+      profileImage: profileImage || "" ,
+      userId: userId || "",
+      description: description,
+      isRead: false,
+    });
+
+    await newNotification.save();
+  } catch (error) {
+    console.error("Error adding notification:", error);
+  }
+};
 
 
 
 module.exports = {
   sendNotification,
-  sendEmailNotification
+  sendEmailNotification,
+  addNotification
 };
