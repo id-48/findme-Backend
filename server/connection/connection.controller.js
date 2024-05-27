@@ -123,7 +123,11 @@ exports.makeFriend = async (req, res) => {
       message =
         "Congratulations " + userName.name + " accepted your friend request.";
       slug = "Friend";
+
       sendNotification(senderId, message, slug);
+      
+      await addNotification(userName.profilePic[0], senderEmail._id, message);
+
       sendEmailNotification(
         senderEmail.email,
         "Your friend request accepted",
@@ -133,6 +137,9 @@ exports.makeFriend = async (req, res) => {
       message = userName.name + " rejected your friend request.";
       slug = "Home";
       sendNotification(senderId, message, slug);
+
+      await addNotification(userName.profilePic[0], senderEmail._id, message);
+
       sendEmailNotification(
         senderEmail.email,
         "Your friend request rejected",

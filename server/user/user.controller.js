@@ -437,10 +437,12 @@ exports.getPeopleMayKnow = async (req, res) => {
     let nearbyUsers = [];
     if (latitude && longitude && radius) {
       nearbyUsers = await locationWiseUserData(latitude, longitude, radius);
+
+      const suggestedUserIds = new Set(suggestedUsers.map(user => user._id.toString()));
+      nearbyUsers = nearbyUsers.filter(user => !suggestedUserIds.has(user._id.toString()));
     }
 
     const finalData = [...new Set([...suggestedUsers, ...nearbyUsers])];
-
 
     if (suggestedUsers.length > 0) {
       res.status(200).json({
