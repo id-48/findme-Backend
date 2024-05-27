@@ -429,7 +429,7 @@ exports.sendUserActivity = async (req, res) => {
 };
 
 exports.getPeopleMayKnow = async (req, res) => {
-  const { userId, radius, latitude, longitude } = req.query;
+  const { userId, radius, latitude, longitude, page = 1, limit = 10 } = req.query;
 
   try {
     const { suggestedUsers, totalSuggestedUsers } = await getMutualConnections(userId);
@@ -443,14 +443,22 @@ exports.getPeopleMayKnow = async (req, res) => {
       nearbyUsers = nearbyUsers.filter(user => !suggestedUserIds.has(user._id.toString()));
     }
 
+    // Combine the lists and remove duplicates
     const finalData = [...new Set([...suggestedUsers, ...nearbyUsers])];
 
-    if (finalData.length > 0) {
+    // Pagination logic
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedData = finalData.slice(startIndex, endIndex);
+
+    if (paginatedData.length > 0) {
       res.status(200).json({
         status: true,
         message: "People you may know.",
         totalSuggestedUsers: finalData.length,
-        suggestedUsers: finalData,
+        suggestedUsers: paginatedData,
+        currentPage: page,
+        totalPages: Math.ceil(finalData.length / limit),
       });
     } else {
       res.status(200).json({
@@ -458,6 +466,8 @@ exports.getPeopleMayKnow = async (req, res) => {
         message: "No suggestions available.",
         totalSuggestedUsers: finalData.length,
         suggestedUsers: [],
+        currentPage: page,
+        totalPages: Math.ceil(finalData.length / limit),
       });
     }
   } catch (error) {
@@ -528,7 +538,6 @@ const locationWiseUserData = async (latitude, longitude, radius) => {
 
   return nearbyUsers;
 };
-
 
 exports.searchUser = async (req, res) => {
   try {
@@ -607,7 +616,6 @@ exports.searchUser = async (req, res) => {
     });
   }
 };
-
 
 exports.filterUser = async (req, res) => {
   try {
