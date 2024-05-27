@@ -438,13 +438,14 @@ exports.getPeopleMayKnow = async (req, res) => {
     if (latitude && longitude && radius) {
       nearbyUsers = await locationWiseUserData(latitude, longitude, radius);
 
+      // Remove duplicates by checking if the user is already in suggestedUsers
       const suggestedUserIds = new Set(suggestedUsers.map(user => user._id.toString()));
       nearbyUsers = nearbyUsers.filter(user => !suggestedUserIds.has(user._id.toString()));
     }
 
     const finalData = [...new Set([...suggestedUsers, ...nearbyUsers])];
 
-    if (suggestedUsers.length > 0) {
+    if (finalData.length > 0) {
       res.status(200).json({
         status: true,
         message: "People you may know.",
@@ -527,6 +528,7 @@ const locationWiseUserData = async (latitude, longitude, radius) => {
 
   return nearbyUsers;
 };
+
 
 exports.searchUser = async (req, res) => {
   try {
