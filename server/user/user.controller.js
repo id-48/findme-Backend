@@ -444,38 +444,29 @@ exports.getPeopleMayKnow = async (req, res) => {
     }
 
     // Combine the lists and remove duplicates
-    const finalData = [...new Set([...suggestedUsers, ...nearbyUsers])];
+    const finalData = [...suggestedUsers, ...nearbyUsers];
+    const uniqueFinalData = Array.from(new Set(finalData.map(user => user._id.toString())))
+      .map(id => finalData.find(user => user._id.toString() === id));
 
     // Pagination logic
+    const totalResults = uniqueFinalData.length;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    const paginatedData = finalData.slice(startIndex, endIndex);
+    const paginatedData = uniqueFinalData.slice(startIndex, endIndex);
 
-    if (paginatedData.length > 0) {
-      res.status(200).json({
-        status: true,
-        message: "People you may know.",
-        totalSuggestedUsers: finalData.length,
-        suggestedUsers: paginatedData,
-        currentPage: page,
-        totalPages: Math.ceil(finalData.length / limit),
-      });
-    } else {
-      res.status(200).json({
-        status: true,
-        message: "No suggestions available.",
-        totalSuggestedUsers: finalData.length,
-        suggestedUsers: [],
-        currentPage: page,
-        totalPages: Math.ceil(finalData.length / limit),
-      });
-    }
+    res.status(200).json({
+      status: true,
+      message: paginatedData.length > 0 ? "People you may know." : "No suggestions available.",
+      totalSuggestedUsers: totalResults,
+      suggestedUsers: paginatedData,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(totalResults / limit),
+    });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ status: false, error: error.message || "Server Error" });
+    return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
 };
+
 
 const getMutualConnections = async (userId) => {
   // Fetch the user's friends
