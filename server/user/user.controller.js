@@ -448,11 +448,15 @@ exports.getPeopleMayKnow = async (req, res) => {
     const uniqueFinalData = Array.from(new Set(finalData.map(user => user._id.toString())))
       .map(id => finalData.find(user => user._id.toString() === id));
 
+    // Remove the specific user from the final list
+    const filteredData = uniqueFinalData.filter(user => user._id.toString() !== userId);
+
+
     // Pagination logic
-    const totalResults = uniqueFinalData.length;
+    const totalResults = filteredData.length;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    const paginatedData = uniqueFinalData.slice(startIndex, endIndex);
+    const paginatedData = filteredData.slice(startIndex, endIndex);
 
     res.status(200).json({
       status: true,
@@ -466,7 +470,6 @@ exports.getPeopleMayKnow = async (req, res) => {
     return res.status(500).json({ status: false, error: error.message || "Server Error" });
   }
 };
-
 
 const getMutualConnections = async (userId) => {
   // Fetch the user's friends
@@ -610,7 +613,7 @@ exports.searchUser = async (req, res) => {
 
 exports.filterUser = async (req, res) => {
   try {
-    var { address, gender, startDate, endDate, limit, pageNo } = req.query;
+    var { userId, address, gender, startDate, endDate, limit, pageNo } = req.query;
 
     if (startDate && !endDate) {
       endDate = startDate;
@@ -642,20 +645,25 @@ exports.filterUser = async (req, res) => {
     }
 
     const filteredUsers = await User.find(userFilter)
-      .limit(parseInt(limit))
-      .skip((parseInt(pageNo) - 1) * parseInt(limit))
       .sort({ createdAt: -1 });
 
     const totalFilteredUsers = await User.countDocuments(userFilter);
 
+    // Remove the specific user from the filtered users list
+    const filteredUsersWithoutSpecifiedUser = filteredUsers.filter(user => user._id.toString() !== userId);
+
+    // Apply pagination after filtering the specific user
+    const paginatedUsers = filteredUsersWithoutSpecifiedUser
+      .slice((parseInt(pageNo) - 1) * parseInt(limit), parseInt(pageNo) * parseInt(limit));
+
     res.status(200).json({
       status: true,
       message:
-        filteredUsers.length > 0
+        paginatedUsers.length > 0
           ? "Success."
           : "No users found with given filters.",
-      totalUser: totalFilteredUsers,
-      users: filteredUsers,
+      totalUser: filteredUsersWithoutSpecifiedUser.length,
+      users: paginatedUsers,
     });
   } catch (error) {
     return res
