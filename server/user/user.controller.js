@@ -429,28 +429,56 @@ exports.sendUserActivity = async (req, res) => {
 };
 
 exports.getPeopleMayKnow = async (req, res) => {
-  const { userId, radius, latitude, longitude, page = 1, limit = 10 } = req.query;
+  const {
+    userId,
+    radius,
+    latitude,
+    longitude,
+    page = 1,
+    limit = 10,
+  } = req.query;
 
   try {
-    const { suggestedUsers, totalSuggestedUsers } = await getMutualConnections(userId);
+    const { suggestedUsers, totalSuggestedUsers } = await getMutualConnections(
+      userId
+    );
 
     let nearbyUsers = [];
     if (latitude && longitude && radius) {
       nearbyUsers = await locationWiseUserData(latitude, longitude, radius);
 
       // Remove duplicates by checking if the user is already in suggestedUsers
-      const suggestedUserIds = new Set(suggestedUsers.map(user => user._id.toString()));
-      nearbyUsers = nearbyUsers.filter(user => !suggestedUserIds.has(user._id.toString()));
+      const suggestedUserIds = new Set(
+        suggestedUsers.map((user) => user._id.toString())
+      );
+      nearbyUsers = nearbyUsers.filter(
+        (user) => !suggestedUserIds.has(user._id.toString())
+      );
     }
 
     // Combine the lists and remove duplicates
     const finalData = [...suggestedUsers, ...nearbyUsers];
-    const uniqueFinalData = Array.from(new Set(finalData.map(user => user._id.toString())))
-      .map(id => finalData.find(user => user._id.toString() === id));
+    const uniqueFinalData = Array.from(
+      new Set(finalData.map((user) => user._id.toString()))
+    ).map((id) => finalData.find((user) => user._id.toString() === id));
 
     // Remove the specific user from the final list
-    const filteredData = uniqueFinalData.filter(user => user._id.toString() !== userId);
+    const filteredData = uniqueFinalData.filter(
+      (user) => user._id.toString() !== userId
+    );
 
+    ///Giving SenderId List of Data
+
+    const pendingRequests = await Connection.find({
+      senderId: userId,
+      status: "pending",
+    });
+
+    const senderIds = pendingRequests.map((request) => request.reciverId);
+
+    const senders = await User.find({ _id: { $in: senderIds } });
+
+    const sendingRequestIds = senders.map((sender) => sender._id);
 
     // Pagination logic
     const totalResults = filteredData.length;
@@ -460,14 +488,20 @@ exports.getPeopleMayKnow = async (req, res) => {
 
     res.status(200).json({
       status: true,
-      message: paginatedData.length > 0 ? "People you may know." : "No suggestions available.",
+      message:
+        paginatedData.length > 0
+          ? "People you may know."
+          : "No suggestions available.",
       totalSuggestedUsers: totalResults,
       suggestedUsers: paginatedData,
       currentPage: parseInt(page),
       totalPages: Math.ceil(totalResults / limit),
+      sendingRequest: sendingRequestIds,
     });
   } catch (error) {
-    return res.status(500).json({ status: false, error: error.message || "Server Error" });
+    return res
+      .status(500)
+      .json({ status: false, error: error.message || "Server Error" });
   }
 };
 
@@ -536,6 +570,8 @@ const locationWiseUserData = async (latitude, longitude, radius) => {
 exports.searchUser = async (req, res) => {
   try {
     const searchQuery = req.query.search;
+    const { currentUserId } = req.query;
+
     if (!searchQuery) {
       return res.status(400).json({
         status: false,
@@ -547,6 +583,7 @@ exports.searchUser = async (req, res) => {
       $or: [
         { title: { $regex: searchQuery, $options: "i" } },
         { description: { $regex: searchQuery, $options: "i" } },
+        { location: { $regex: searchQuery, $options: "i" } },
       ],
     };
 
@@ -590,6 +627,33 @@ exports.searchUser = async (req, res) => {
       ).values(),
     ];
 
+    ///Giving SenderId List of Data
+
+    const pendingRequests = await Connection.find({
+      senderId: currentUserId,
+      status: "pending",
+    });
+
+    const senderIds = pendingRequests.map((request) => request.reciverId);
+
+    const senders = await User.find({ _id: { $in: senderIds } });
+
+    const sendingRequestIds = senders.map((sender) => sender._id);
+
+    ///Giving reciveRequestedIds List of Data
+
+    const pendingRequests1 = await Connection.find({
+      reciverId: currentUserId,
+      status: "pending",
+    });
+
+    const reciverIds = pendingRequests1.map((request) => request.senderId);
+
+    const recivers = await User.find({ _id: { $in: reciverIds } });
+
+    const reciversRequestIds = recivers.map((reciver) => reciver._id);
+
+    ///Pagination
     const limit = parseInt(req.query.limit) || 10;
     const pageNo = parseInt(req.query.pageNo) || 1;
     const startIndex = (pageNo - 1) * limit;
@@ -602,6 +666,8 @@ exports.searchUser = async (req, res) => {
       message: "Success.",
       totalUser: uniqueUsers.length,
       users: paginatedUsers,
+      sendingRequestedIds: sendingRequestIds,
+      reciveRequestedIds: reciversRequestIds,
     });
   } catch (error) {
     return res.status(500).json({
@@ -613,7 +679,8 @@ exports.searchUser = async (req, res) => {
 
 exports.filterUser = async (req, res) => {
   try {
-    var { userId, address, gender, startDate, endDate, limit, pageNo } = req.query;
+    var { userId, address, gender, startDate, endDate, limit, pageNo } =
+      req.query;
 
     if (startDate && !endDate) {
       endDate = startDate;
@@ -644,17 +711,46 @@ exports.filterUser = async (req, res) => {
       userFilter.mono = { $in: eventMonos };
     }
 
-    const filteredUsers = await User.find(userFilter)
-      .sort({ createdAt: -1 });
+    const filteredUsers = await User.find(userFilter).sort({ createdAt: -1 });
 
     const totalFilteredUsers = await User.countDocuments(userFilter);
 
     // Remove the specific user from the filtered users list
-    const filteredUsersWithoutSpecifiedUser = filteredUsers.filter(user => user._id.toString() !== userId);
+    const filteredUsersWithoutSpecifiedUser = filteredUsers.filter(
+      (user) => user._id.toString() !== userId
+    );
+
+    ///Giving SenderId List of Data
+
+    const pendingRequests = await Connection.find({
+      senderId: userId,
+      status: "pending",
+    });
+
+    const senderIds = pendingRequests.map((request) => request.reciverId);
+
+    const senders = await User.find({ _id: { $in: senderIds } });
+
+    const sendingRequestIds = senders.map((sender) => sender._id);
+
+    ///Giving reciveRequestedIds List of Data
+
+    const pendingRequests1 = await Connection.find({
+      reciverId: userId,
+      status: "pending",
+    });
+
+    const reciverIds = pendingRequests1.map((request) => request.senderId);
+
+    const recivers = await User.find({ _id: { $in: reciverIds } });
+
+    const reciversRequestIds = recivers.map((reciver) => reciver._id);
 
     // Apply pagination after filtering the specific user
-    const paginatedUsers = filteredUsersWithoutSpecifiedUser
-      .slice((parseInt(pageNo) - 1) * parseInt(limit), parseInt(pageNo) * parseInt(limit));
+    const paginatedUsers = filteredUsersWithoutSpecifiedUser.slice(
+      (parseInt(pageNo) - 1) * parseInt(limit),
+      parseInt(pageNo) * parseInt(limit)
+    );
 
     res.status(200).json({
       status: true,
@@ -664,6 +760,8 @@ exports.filterUser = async (req, res) => {
           : "No users found with given filters.",
       totalUser: filteredUsersWithoutSpecifiedUser.length,
       users: paginatedUsers,
+      sendingRequestedIds: sendingRequestIds,
+      reciveRequestedIds: reciversRequestIds,
     });
   } catch (error) {
     return res
