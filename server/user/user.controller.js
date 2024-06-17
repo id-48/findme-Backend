@@ -708,7 +708,7 @@ exports.searchUser = async (req, res) => {
     res.status(200).json({
       status: true,
       message: "Success.",
-      totalUser: filteredUsers.length,
+      totalUser: paginatedUsers.length,
       users: paginatedUsers,
       sendingRequestedIds: sendingRequestIds,
       reciveRequestedIds: reciversRequestIds,
@@ -811,7 +811,7 @@ exports.filterUser = async (req, res) => {
         paginatedUsers.length > 0
           ? "Success."
           : "No users found with given filters.",
-      totalUser: filteredUsersWithoutSpecifiedUser.length,
+      totalUser: paginatedUsers.length,
       users: paginatedUsers,
       sendingRequestedIds: sendingRequestIds,
       reciveRequestedIds: reciversRequestIds,
