@@ -439,9 +439,7 @@ exports.getPeopleMayKnow = async (req, res) => {
   } = req.query;
 
   try {
-    const { suggestedUsers, totalSuggestedUsers } = await getMutualConnections(
-      userId
-    );
+    const { suggestedUsers, totalSuggestedUsers } = await getMutualConnections(userId);
 
     let nearbyUsers = [];
     if (latitude && longitude && radius) {
@@ -468,23 +466,54 @@ exports.getPeopleMayKnow = async (req, res) => {
     );
 
     ///Giving SenderId List of Data
-
     const pendingRequests = await Connection.find({
       senderId: userId,
       status: "pending",
     });
-
     const senderIds = pendingRequests.map((request) => request.reciverId);
-
     const senders = await User.find({ _id: { $in: senderIds } });
+    const sendingRequestIds = senders.map((sender) => sender._id.toString());
 
-    const sendingRequestIds = senders.map((sender) => sender._id);
+    ///Giving reciveRequestedIds List of Data
+    const pendingRequests1 = await Connection.find({
+      reciverId: userId,
+      status: "pending",
+    });
+    const reciverIds = pendingRequests1.map((request) => request.senderId);
+    const recivers = await User.find({ _id: { $in: reciverIds } });
+    const reciversRequestIds = recivers.map((reciver) =>
+      reciver._id.toString()
+    );
+
+    // Combine sendingRequestIds and reciversRequestIds into a set
+    const idsToRemove = new Set([...sendingRequestIds, ...reciversRequestIds]);
+
+    // Filter filteredData to remove users with IDs in idsToRemove
+    const filteredPaginatedData = filteredData.filter(
+      (user) => !idsToRemove.has(user._id.toString())
+    );
+
+    // Find connections
+    const connections = await Connection.find({
+      $or: [{ senderId: userId }, { reciverId: userId }],
+      status: "approved",
+    });
+
+    // Extract the IDs of the connections
+    const connectionIds = new Set(connections.map((conn) => {
+      return conn.senderId.toString() === userId ? conn.reciverId.toString() : conn.senderId.toString();
+    }));
+
+    // Further filter the paginatedData to remove users with IDs in connectionIds
+    const finalFilteredData = filteredPaginatedData.filter(
+      (user) => !connectionIds.has(user._id.toString())
+    );
 
     // Pagination logic
-    const totalResults = filteredData.length;
+    const totalResults = finalFilteredData.length;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    const paginatedData = filteredData.slice(startIndex, endIndex);
+    const paginatedData = finalFilteredData.slice(startIndex, endIndex);
 
     res.status(200).json({
       status: true,
@@ -497,6 +526,7 @@ exports.getPeopleMayKnow = async (req, res) => {
       currentPage: parseInt(page),
       totalPages: Math.ceil(totalResults / limit),
       sendingRequest: sendingRequestIds,
+      reciveRequestedIds: reciversRequestIds,
     });
   } catch (error) {
     return res
@@ -627,44 +657,58 @@ exports.searchUser = async (req, res) => {
       ).values(),
     ];
 
-    ///Giving SenderId List of Data
-
+    /// Giving SenderId List of Data
     const pendingRequests = await Connection.find({
       senderId: currentUserId,
       status: "pending",
     });
 
     const senderIds = pendingRequests.map((request) => request.reciverId);
-
     const senders = await User.find({ _id: { $in: senderIds } });
-
     const sendingRequestIds = senders.map((sender) => sender._id);
 
-    ///Giving reciveRequestedIds List of Data
-
+    /// Giving reciveRequestedIds List of Data
     const pendingRequests1 = await Connection.find({
       reciverId: currentUserId,
       status: "pending",
     });
 
     const reciverIds = pendingRequests1.map((request) => request.senderId);
-
     const recivers = await User.find({ _id: { $in: reciverIds } });
-
     const reciversRequestIds = recivers.map((reciver) => reciver._id);
 
-    ///Pagination
+    // Find connections
+    const connections = await Connection.find({
+      $or: [{ senderId: currentUserId }, { reciverId: currentUserId }],
+      status: "approved",
+    });
+
+    // Get the IDs of connected users
+    const connectedUserIds = new Set(
+      connections.map((conn) =>
+        conn.senderId.toString() === currentUserId
+          ? conn.reciverId.toString()
+          : conn.senderId.toString()
+      )
+    );
+
+    // Pagination logic
     const limit = parseInt(req.query.limit) || 10;
     const pageNo = parseInt(req.query.pageNo) || 1;
     const startIndex = (pageNo - 1) * limit;
     const endIndex = startIndex + limit;
 
-    const paginatedUsers = uniqueUsers.slice(startIndex, endIndex);
+    // Filter paginatedUsers to remove users with IDs in connectedUserIds
+    const filteredUsers = uniqueUsers.filter(
+      (user) => !connectedUserIds.has(user._id.toString())
+    );
+
+    const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
 
     res.status(200).json({
       status: true,
       message: "Success.",
-      totalUser: uniqueUsers.length,
+      totalUser: filteredUsers.length,
       users: paginatedUsers,
       sendingRequestedIds: sendingRequestIds,
       reciveRequestedIds: reciversRequestIds,
@@ -712,7 +756,6 @@ exports.filterUser = async (req, res) => {
     }
 
     const filteredUsers = await User.find(userFilter).sort({ createdAt: -1 });
-
     const totalFilteredUsers = await User.countDocuments(userFilter);
 
     // Remove the specific user from the filtered users list
@@ -721,35 +764,45 @@ exports.filterUser = async (req, res) => {
     );
 
     ///Giving SenderId List of Data
-
     const pendingRequests = await Connection.find({
       senderId: userId,
       status: "pending",
     });
-
     const senderIds = pendingRequests.map((request) => request.reciverId);
-
     const senders = await User.find({ _id: { $in: senderIds } });
-
     const sendingRequestIds = senders.map((sender) => sender._id);
 
     ///Giving reciveRequestedIds List of Data
-
     const pendingRequests1 = await Connection.find({
       reciverId: userId,
       status: "pending",
     });
-
     const reciverIds = pendingRequests1.map((request) => request.senderId);
-
     const recivers = await User.find({ _id: { $in: reciverIds } });
-
     const reciversRequestIds = recivers.map((reciver) => reciver._id);
 
+    // Find connections
+    const connections = await Connection.find({
+      $or: [{ senderId: userId }, { reciverId: userId }],
+      status: "approved",
+    });
+
+    // Extract user IDs from connections
+    const connectionIds = connections.map((connection) =>
+      connection.senderId.toString() === userId
+        ? connection.reciverId.toString()
+        : connection.senderId.toString()
+    );
+
     // Apply pagination after filtering the specific user
-    const paginatedUsers = filteredUsersWithoutSpecifiedUser.slice(
+    let paginatedUsers = filteredUsersWithoutSpecifiedUser.slice(
       (parseInt(pageNo) - 1) * parseInt(limit),
       parseInt(pageNo) * parseInt(limit)
+    );
+
+    // Filter paginatedUsers to remove users with IDs in connectionIds
+    paginatedUsers = paginatedUsers.filter(
+      (user) => !connectionIds.includes(user._id.toString())
     );
 
     res.status(200).json({
