@@ -40,7 +40,6 @@ exports.addPlace = async (req, res) => {
   }
 };
 
-
 exports.updatePlace = async (req, res) => {
   var {
     placeId,

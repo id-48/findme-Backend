@@ -78,7 +78,6 @@ exports.addUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   var {
-    userId,
     name,
     profilePic,
     bio,
@@ -98,7 +97,7 @@ exports.updateUser = async (req, res) => {
   } = req.body;
 
   try {
-    var existingUser = await User.findOne({ _id: userId });
+    var existingUser = req.user;
 
     if (existingUser) {
       existingUser.name = name != "" ? name : existingUser.name;
@@ -187,10 +186,10 @@ exports.getAllUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   try {
-    var existingUser = await User.findOne({ _id: req.query.userId });
+    var existingUser = req.user;
 
     if (existingUser) {
-      var deletedUser = await User.deleteOne({ _id: req.query.userId });
+      var deletedUser = req.user;
 
       if (fs.existsSync(existingUser.profilePic[0])) {
         fs.unlinkSync(existingUser.profilePic[0]);
@@ -373,7 +372,7 @@ exports.getLocationWiseUser = async (req, res) => {
     const response = {
       status: true,
       message: "Success.",
-      totalUser: paginatedUsers.length,
+      totalUser: connectedUserIds.length,
       currentUserId: currentUserId,
       user: paginatedUsers,
       sendingRequest: sendingRequestIds,
@@ -397,15 +396,9 @@ exports.getLocationWiseUser = async (req, res) => {
 
 exports.sendUserActivity = async (req, res) => {
   try {
-    const { userId, lastActivate, userStatus } = req.body;
+    const { lastActivate, userStatus } = req.body;
 
-    if (!userId) {
-      return res
-        .status(400)
-        .json({ status: false, message: "userId is required" });
-    }
-
-    const user = await User.findById(userId);
+    const user = await User.findById(req.user);
 
     if (!user) {
       return res.status(404).json({ status: false, message: "User not found" });
@@ -430,7 +423,6 @@ exports.sendUserActivity = async (req, res) => {
 
 exports.getPeopleMayKnow = async (req, res) => {
   const {
-    userId,
     radius,
     latitude,
     longitude,
@@ -439,7 +431,7 @@ exports.getPeopleMayKnow = async (req, res) => {
   } = req.query;
 
   try {
-    const { suggestedUsers, totalSuggestedUsers } = await getMutualConnections(userId);
+    const { suggestedUsers, totalSuggestedUsers } = await getMutualConnections(req.user);
 
     let nearbyUsers = [];
     if (latitude && longitude && radius) {
@@ -462,12 +454,12 @@ exports.getPeopleMayKnow = async (req, res) => {
 
     // Remove the specific user from the final list
     const filteredData = uniqueFinalData.filter(
-      (user) => user._id.toString() !== userId
+      (user) => user._id.toString() !== req.user
     );
 
     ///Giving SenderId List of Data
     const pendingRequests = await Connection.find({
-      senderId: userId,
+      senderId: req.user,
       status: "pending",
     });
     const senderIds = pendingRequests.map((request) => request.reciverId);
@@ -476,7 +468,7 @@ exports.getPeopleMayKnow = async (req, res) => {
 
     ///Giving reciveRequestedIds List of Data
     const pendingRequests1 = await Connection.find({
-      reciverId: userId,
+      reciverId: req.user,
       status: "pending",
     });
     const reciverIds = pendingRequests1.map((request) => request.senderId);
@@ -495,13 +487,13 @@ exports.getPeopleMayKnow = async (req, res) => {
 
     // Find connections
     const connections = await Connection.find({
-      $or: [{ senderId: userId }, { reciverId: userId }],
+      $or: [{ senderId: req.user }, { reciverId: req.user }],
       status: "approved",
     });
 
     // Extract the IDs of the connections
     const connectionIds = new Set(connections.map((conn) => {
-      return conn.senderId.toString() === userId ? conn.reciverId.toString() : conn.senderId.toString();
+      return conn.senderId.toString() === req.user ? conn.reciverId.toString() : conn.senderId.toString();
     }));
 
     // Further filter the paginatedData to remove users with IDs in connectionIds
@@ -723,7 +715,7 @@ exports.searchUser = async (req, res) => {
 
 exports.filterUser = async (req, res) => {
   try {
-    var { userId, address, gender, startDate, endDate, limit, pageNo } =
+    var { address, gender, startDate, endDate, limit, pageNo } =
       req.query;
 
     if (startDate && !endDate) {
@@ -732,7 +724,7 @@ exports.filterUser = async (req, res) => {
 
     const userFilter = {};
     if (address) {
-      userFilter.address = address;
+      userFilter.address = {$regex: `${address}`,$options: "i"};
     }
     if (gender) {
       userFilter.gender = gender;
@@ -760,12 +752,12 @@ exports.filterUser = async (req, res) => {
 
     // Remove the specific user from the filtered users list
     const filteredUsersWithoutSpecifiedUser = filteredUsers.filter(
-      (user) => user._id.toString() !== userId
+      (user) => user._id.toString() !== req.user
     );
 
     ///Giving SenderId List of Data
     const pendingRequests = await Connection.find({
-      senderId: userId,
+      senderId: req.user,
       status: "pending",
     });
     const senderIds = pendingRequests.map((request) => request.reciverId);
@@ -774,7 +766,7 @@ exports.filterUser = async (req, res) => {
 
     ///Giving reciveRequestedIds List of Data
     const pendingRequests1 = await Connection.find({
-      reciverId: userId,
+      reciverId: req.user,
       status: "pending",
     });
     const reciverIds = pendingRequests1.map((request) => request.senderId);
@@ -783,13 +775,13 @@ exports.filterUser = async (req, res) => {
 
     // Find connections
     const connections = await Connection.find({
-      $or: [{ senderId: userId }, { reciverId: userId }],
+      $or: [{ senderId: req.user }, { reciverId: req.user }],
       status: "approved",
     });
 
     // Extract user IDs from connections
     const connectionIds = connections.map((connection) =>
-      connection.senderId.toString() === userId
+      connection.senderId.toString() === req.user
         ? connection.reciverId.toString()
         : connection.senderId.toString()
     );
