@@ -1,11 +1,17 @@
 const express = require("express");
 const EventController = require("./event.controller");
-const verifyToken = require('../../checkAccess'); 
 const router = express.Router();
+const verifyToken = require('../../checkAccess'); 
+const multer = require("multer");
+const storage = require("../../util/multer");
 
-router.post("/addEvent", verifyToken, EventController.addEvent);
+const upload = multer({
+    storage,    
+});
 
-router.post("/updateEvent", verifyToken, EventController.updateEvent);
+router.post("/addEvent", upload.fields([{ name: "eventImages" }]), verifyToken, EventController.addEvent);
+
+router.post("/updateEvent", upload.fields([{ name: "eventImages" }]), verifyToken, EventController.updateEvent);
 
 router.get("/getAllEvent", verifyToken, EventController.getAllEvent);
 
