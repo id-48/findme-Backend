@@ -56,6 +56,10 @@ app.use("/chat", Chat);
 const ChatToppic = require("./server/chatTopic/chatTopic.route");
 app.use("/chatTopic", ChatToppic);
 
+// Settings route
+const Settings = require("./server/settings/setting.route");
+app.use("/settings", Settings);
+
 //mongodb connection
 mongoose.connect(config.MONGOOSE_URL, {
   useNewUrlParser: true,

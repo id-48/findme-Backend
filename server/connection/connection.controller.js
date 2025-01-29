@@ -133,7 +133,8 @@ exports.makeFriend = async (req, res) => {
         "Your friend request accepted",
         message
       );
-    } else if (status === "rejected") {
+    } else if (status === "rejected"  || status === "unfollow" ) {
+      if(status == "rejected"){
       message = userName.name + " rejected your friend request.";
       slug = "Home";
       sendNotification(senderId, message, slug);
@@ -145,6 +146,7 @@ exports.makeFriend = async (req, res) => {
         "Your friend request rejected",
         message
       );
+      }
 
       await Connection.deleteOne({ senderId, reciverId });
     } else {

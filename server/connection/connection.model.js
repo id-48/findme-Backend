@@ -6,7 +6,7 @@ const ConnectionSchema = new mongoose.Schema(
     reciverId: { type: String, default: "" },
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
+      enum: ["pending", "approved", "rejected","unfollow"],
       default: "pending",
     },
   },
