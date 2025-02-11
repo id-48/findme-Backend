@@ -1,5 +1,4 @@
 module.exports = {
-
     MONGOOSE_URL: "mongodb+srv://root:Yagnik2324%403525@cluster0.pbp0yps.mongodb.net/findMe",
 
     JWT_SECRET: "FDYnX4rd9I",
