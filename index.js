@@ -58,3 +58,7 @@ db.once("open", () => {
   console.log("MONGO: successfully connected to db");
 });
 
+// start the server
+app.listen(config.PORT, () => {
+  console.log("Magic happens on port " + config.PORT);
+});
