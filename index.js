@@ -51,3 +51,4 @@ db.once("open", () => {
 app.listen(config.PORT, () => {
     console.log("Magic happens on port " + config.PORT);
 });
+
