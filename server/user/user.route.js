@@ -15,10 +15,20 @@ router.post("/updateUser" , upload.fields([{ name: "profilePic" }]), verifyToken
 
 router.get("/getAllUser", verifyToken, UserController.getAllUser);
 
+router.get("/getLocationWiseUser", verifyToken, UserController.getLocationWiseUser);
+
 router.get("/getUser", verifyToken, UserController.getUser);
 
 router.get("/deleteUser", verifyToken , UserController.deleteUser);
 
 router.post("/checkUser", UserController.userCheck);
+
+router.post("/sendUserActivity", verifyToken , UserController.sendUserActivity);
+
+router.get("/getPeopleMayKnow", verifyToken , UserController.getPeopleMayKnow );
+
+router.get("/searchUser", verifyToken , UserController.searchUser );
+
+router.get("/filterUser", verifyToken , UserController.filterUser );
 
 module.exports = router;

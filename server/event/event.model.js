@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const EventSchema = new mongoose.Schema(
     {
         title: { type: String, default: "" },
+        eventImages: { type: Array, default: [] },
         location: { type: String, default: "" },
         lattitude: { type: String, default: "" },
         longtitude: { type: String, default: "" },

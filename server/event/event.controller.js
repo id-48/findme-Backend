@@ -1,9 +1,11 @@
 const Event = require("./event.model");
+const fs = require("fs");
 
 exports.addEvent = async (req, res) => {
   var {
     title,
     location,
+    eventImages,
     lattitude,
     longtitude,
     eventDate,
@@ -12,15 +14,10 @@ exports.addEvent = async (req, res) => {
     mono,
   } = req.body;
   try {
-    var existingEvent = await Event.findOne({title});
-
-    if (existingEvent) {
-      return res.status(200).json({ status: false, message: "Event already exists." });
-    }
-
     var newEvent = new Event({
       title: title || "",
       location: location || "",
+      eventImages: eventImages || [],
       lattitude: lattitude || "",
       longtitude: longtitude || "",
       eventDate: eventDate || "",
@@ -28,6 +25,11 @@ exports.addEvent = async (req, res) => {
       description: description || "",
       mono: mono || ""
     });
+
+    if (req.files.eventImages) {
+      newEvent.eventImages = req.files.eventImages[0].path;
+    }
+
 
     var eventSaved = await newEvent.save();
 
@@ -46,6 +48,7 @@ exports.updateEvent = async (req, res) => {
     eventId,
     title,
     location,
+    eventImages,
     lattitude,
     longtitude,
     eventDate,
@@ -61,12 +64,22 @@ exports.updateEvent = async (req, res) => {
 
       existingEvent.title = title != "" ? title : existingEvent.title;
       existingEvent.location = location != "" ? location : existingEvent.location;
+      existingEvent.eventImages = eventImages != [] ? eventImages : existingUser.eventImages;
       existingEvent.lattitude = lattitude != "" ? lattitude : existingEvent.lattitude;
       existingEvent.longtitude = longtitude != "" ? longtitude : existingEvent.longtitude;
       existingEvent.eventDate = eventDate != "" ? eventDate : existingEvent.eventDate;
       existingEvent.time = time != "" ? time : existingEvent.time;
       existingEvent.description = description != "" ? description : existingEvent.description;
       existingEvent.mono = mono != "" ? mono : existingEvent.mono;
+
+      
+      if (req.files.eventImages != undefined) {
+        const elem = existingEvent.eventImages;
+        if (fs.existsSync(elem)) {
+          fs.unlinkSync(elem);
+        }
+        existingEvent.eventImages = req.files.eventImages[0].path;
+      }
 
       updateSaved = await existingEvent.save();
 
@@ -124,6 +137,9 @@ exports.deleteEvent = async (req, res) => {
     if (existingEvent) {
       var deletedEvent = await Event.deleteOne({ _id: req.query.eventId });
 
+      if (fs.existsSync(existingEvent.eventImages[0])) {
+        fs.unlinkSync(existingEvent.eventImages[0]);
+      }
     
       return res.status(200).json({ status: true, message: "Success!!" });
     } else {
