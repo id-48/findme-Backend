@@ -6,6 +6,8 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const config = require("../../config");
 const geolib = require("geolib");
+const mongoose = require("mongoose");
+
 
 exports.addUser = async (req, res) => {
   var {
@@ -750,6 +752,8 @@ exports.filterUser = async (req, res) => {
     const filteredUsers = await User.find(userFilter).sort({ createdAt: -1 });
     const totalFilteredUsers = await User.countDocuments(userFilter);
 
+    const currentUserId = new mongoose.Types.ObjectId(req.user);
+
     // Remove the specific user from the filtered users list
     const filteredUsersWithoutSpecifiedUser = filteredUsers.filter(
       (user) => user._id.toString() !== req.user
@@ -757,7 +761,7 @@ exports.filterUser = async (req, res) => {
 
     ///Giving SenderId List of Data
     const pendingRequests = await Connection.find({
-      senderId: req.user,
+      senderId: currentUserId,
       status: "pending",
     });
     const senderIds = pendingRequests.map((request) => request.reciverId);
@@ -766,7 +770,7 @@ exports.filterUser = async (req, res) => {
 
     ///Giving reciveRequestedIds List of Data
     const pendingRequests1 = await Connection.find({
-      reciverId: req.user,
+      reciverId: currentUserId,
       status: "pending",
     });
     const reciverIds = pendingRequests1.map((request) => request.senderId);
@@ -775,7 +779,7 @@ exports.filterUser = async (req, res) => {
 
     // Find connections
     const connections = await Connection.find({
-      $or: [{ senderId: req.user }, { reciverId: req.user }],
+      $or: [{ senderId: currentUserId }, { reciverId: req.user }],
       status: "approved",
     });
 
